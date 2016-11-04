@@ -5,9 +5,9 @@ var StandardPeriodSelector = require('./../src/standard-period-selector');
 
 describe('StandardPeriodSelector', function () {
   var stPS = new StandardPeriodSelector();
-  describe('#calculateApplicableStandardPeriods', function () {
+  describe('#calculateApplicableUnitPeriods', function () {
     it('should be a array', function () {
-      expect(stPS.calculateApplicableStandardPeriods()).to.be.a('array');
+      expect(stPS.calculateApplicableUnitPeriods()).to.be.a('array');
     });
   });
 });
