@@ -9,61 +9,87 @@ class StandardPeriodSelector {
     this.startActiveWindow = 55000000;
     this.endActiveWindow = 60000000;
     this.standardPeriods = [];
+    this.timePeriods = [{
+      'name': 'minute',
+      'milliseconds': 60000,
+      'startingPoint': 0,
+      'abbreviation': 'min',
+      'description': 'MINUTE',
+      'parent': 'hour',
+      'multipliers': [1, 15, 30]
+    }, {
+      'name': 'hour',
+      'milliseconds': 3600000,
+      'startingPoint': 0,
+      'abbreviation': 'hr',
+      'description': 'HOUR',
+      'parent': 'day',
+      'multipliers': [1, 3, 6, 12]
+    }, {
+      'name': 'day',
+      'milliseconds': 86400000,
+      'startingPoint': 0,
+      'abbreviation': 'D',
+      'description': 'DAY',
+      'parent': 'month',
+      'multipliers': [1, 7, 15]
+    }, {
+      'name': 'month',
+      'milliseconds': 2592000000,
+      'startingPoint': 0,
+      'abbreviation': 'M',
+      'description': 'MONTH',
+      'parent': 'year',
+      'multipliers': [1, 3, 6]
+    }, {
+      'name': 'year',
+      'milliseconds': 31104000000,
+      'startingPoint': 0,
+      'abbreviation': 'Y',
+      'description': 'YEAR',
+      'multipliers': [1, 3, 5]
+    }];
     this.config = {};
   }
 
   calculateApplicableUnitPeriods () {
     var targetBlock = this.endActiveWindow - this.startDataset;
-    var applicableStandardUnitPeriod = [];
     var i = 0;
     var j = 0;
-    // var counter = 0;
     var activeWindow = this.endActiveWindow - this.startActiveWindow;
-    // counter = -1;
-    // this.standardPeriods = [];
+    this.standardPeriods = [];
     console.log('activeWindow', activeWindow);
-    for (i = 0; i < window.timePeriods.length; i++) {
-      // console.log('window.timePeriods[i].milliseconds', window.timePeriods[i].milliseconds);
-      // console.log(Math.round((activeWindow) / window.timePeriods[i].milliseconds));
-      // console.log('window.timePeriods[i].milliseconds', window.timePeriods[i].multipliers);
-      if (targetBlock / window.timePeriods[i].milliseconds >= 1) {
-        console.log(window.timePeriods[i].description);
-        if (Math.floor((activeWindow) / window.timePeriods[i].milliseconds) < 1) {
-          window.timePeriods[i].applicableMultipliers = window.timePeriods[i].multipliers[0];
-          this.standardPeriods.push({ 'multipliers': [window.timePeriods[i].multipliers[0]],
-            'milliseconds': window.timePeriods[i].milliseconds,
-            'abbreviation': window.timePeriods[i].abbreviation,
-            'description': window.timePeriods[i].description});
-          // counter++;
-          console.log(window.timePeriods[i].multipliers[0] + window.timePeriods[i].abbreviation);
-        } else {
-          for (j = 0; j < window.timePeriods[i].multipliers.length; j++) {
-            if (activeWindow / 5 < window.timePeriods[i].multipliers[j] * window.timePeriods[i].milliseconds) {
-              if (window.timePeriods[i].applicableMultipliers === undefined) {
-                window.timePeriods[i].applicableMultipliers = [];
-              }
-              if (this.standardPeriods[this.standardPeriods.length - 1] === undefined) {
-                this.standardPeriods.push({ 'multipliers': [],
-                  'milliseconds': window.timePeriods[i].milliseconds,
-                  'abbreviation': window.timePeriods[i].abbreviation,
-                  'description': window.timePeriods[i].description});
-              }
-              this.standardPeriods[this.standardPeriods.length - 1]
-                .multipliers.push(window.timePeriods[i].multipliers[j]);
-              // this.standardPeriods[this.standardPeriods.length - 1]
-              //   .abbreviation = window.timePeriods[i].abbreviation;
-              // this.standardPeriods[this.standardPeriods.length - 1]
-              //   .milliseconds = window.timePeriods[i].milliseconds;
-              // window.timePeriods[i].applicableMultipliers.push(window.timePeriods[i].multipliers[j]);
-              console.log(window.timePeriods[i].multipliers[j] + window.timePeriods[i].abbreviation);
+    for (i = 0; i < this.timePeriods.length; i++) {
+      // checking whether the unit is applicable for the current target block
+      if (targetBlock / this.timePeriods[i].milliseconds >= 1) {
+        // checking whether the unit is of the higher order and only multiplier 1 is applicable
+        if (Math.floor((activeWindow) / this.timePeriods[i].milliseconds) < 1) {
+          this.standardPeriods.push({
+            'abbreviation': this.timePeriods[i].abbreviation,
+            'description': this.timePeriods[i].description,
+            'milliseconds': this.timePeriods[i].milliseconds,
+            'multipliers': [1]
+          });
+        } else { // if the unit is of the order of the target block and calculating the multipliers
+          this.standardPeriods.push({
+            'abbreviation': this.timePeriods[i].abbreviation,
+            'description': this.timePeriods[i].description,
+            'milliseconds': this.timePeriods[i].milliseconds,
+            'multipliers': []
+          });
+          // calculating and populating the applicable multpliers of each unit
+          for (j = 0; j < this.timePeriods[i].multipliers.length; j++) {
+            if (activeWindow / 10 < this.timePeriods[i].multipliers[j] * this.timePeriods[i].milliseconds) {
+              this.standardPeriods[this.standardPeriods.length - 1].multipliers.push(
+                this.timePeriods[i].multipliers[j]
+                );
             }
           }
         }
-        applicableStandardUnitPeriod.push(window.timePeriods[i]);
-        console.log('================');
       }
     }
-    return applicableStandardUnitPeriod;
+    this.drawButtons(this.standardPeriods);
+    return this.standardPeriods;
   }
 
   calculateApplicableStandardPeriods () {
@@ -75,8 +101,17 @@ class StandardPeriodSelector {
     console.log(start, end);
     this.startActiveWindow = start;
     this.endActiveWindow = end;
-    document.getElementById('startActiveRange').innerHTML = this.startActiveWindow;
-    document.getElementById('endActiveRange').innerHTML = this.endActiveWindow;
+    document.getElementById('startActiveRange').innerHTML = new Date(this.startActiveWindow);
+    document.getElementById('endActiveRange').innerHTML = new Date(this.endActiveWindow);
+    this.calculateApplicableUnitPeriods();
+  }
+
+  setTimeline (start, end) {
+    console.log(start, end);
+    this.startDataset = start;
+    this.endDataset = end;
+    document.getElementById('startActiveRange').innerHTML = new Date(this.startDataset);
+    document.getElementById('endActiveRange').innerHTML = new Date(this.endDataset);
     this.calculateApplicableUnitPeriods();
   }
 
@@ -90,7 +125,7 @@ class StandardPeriodSelector {
     this.calculateApplicableUnitPeriods();
   }
 
-  drawButtons () {
+  drawButtons (standardPeriods) {
     var calculatedButtons = document.getElementById('calculated');
     var btn;
     var i = 0;
@@ -98,20 +133,15 @@ class StandardPeriodSelector {
     var multiplierValue = 0;
     var self = this;
     calculatedButtons.innerHTML = '';
-    console.clear();
-    for (i = this.standardPeriods.length - 1; i >= 0; i--) {
-      for (j = this.standardPeriods[i].multipliers.length - 1; j >= 0; j--) {
-        console.log(this.standardPeriods[i].multipliers[j] + this.standardPeriods[i].abbreviation);
+    for (i = standardPeriods.length - 1; i >= 0; i--) {
+      for (j = standardPeriods[i].multipliers.length - 1; j >= 0; j--) {
         btn = document.createElement('BUTTON');
-        btn.id = this.standardPeriods[i].multipliers[j] + this.standardPeriods[i].abbreviation;
-        btn.innerHTML = this.standardPeriods[i].multipliers[j] + this.standardPeriods[i].abbreviation;
-        multiplierValue = self.standardPeriods[i].multipliers[j] * this.standardPeriods[i].milliseconds;
+        btn.id = standardPeriods[i].multipliers[j] + standardPeriods[i].abbreviation;
+        btn.innerHTML = standardPeriods[i].multipliers[j] + standardPeriods[i].abbreviation;
+        multiplierValue = standardPeriods[i].multipliers[j] * standardPeriods[i].milliseconds;
         btn.multiplierValue = multiplierValue;
-        console.log(multiplierValue);
         btn.addEventListener('click', function (event) {
-          console.log(event.srcElement.multiplierValue);
           self.setActivePeriod(self.endActiveWindow - event.srcElement.multiplierValue, self.endActiveWindow);
-          self.drawButtons();
         });
         calculatedButtons.appendChild(btn);
       }
