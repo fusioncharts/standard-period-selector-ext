@@ -12,10 +12,6 @@
       "semi": [
         "error",
         "always"
-      ],
-      "one-var": [
-        "error",
-        "always"
       ]
     }
 }
