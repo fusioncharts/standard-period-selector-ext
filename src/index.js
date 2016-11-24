@@ -1,20 +1,24 @@
 'use strict';
 const StandardPeriodSelector = require('./standard-period-selector');
 
-var global = this;
-var extAPI = global.extAPI;
 window.stPS = new StandardPeriodSelector();
-extAPI(window.stPS);
 
-// var fc = new FusionCharts();
+;(function (env, factory) {
+  if (typeof module === 'object' && module.exports) {
+    module.exports = env.document
+       ? factory(env) : function (win) {
+         if (!win.document) {
+           throw new Error('Window with document not present');
+         }
+         return factory(win, true);
+       };
+  } else {
+    env.Aggregator = factory(env, true);
+  }
+})(typeof window !== 'undefined' ? window : this, function (_window, windowExists) {
+  var FC = _window.FusionCharts;
 
-/* FusionCharts.register('extension', ['standard-period-selector', function (id) {
-  var global = this;
-  var extAPI = global.extAPI;
-
-  // var otherAPI = FusionCharts.getExtComponent(id, 'api', 'legacyextapi');
-  // var toolBoxApi = FusionCharts.getComponent('api', 'toolbox');
-
-  window.stPS = new StandardPeriodSelector();
-  extAPI(window.stPS);
-}]); */
+  FC.register('extension', ['private', 'StandardPeriodSelector', function () {
+    FC.registerComponent('extensions', 'StandardPeriodSelector', StandardPeriodSelector);
+  }]);
+});

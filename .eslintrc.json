@@ -9,9 +9,9 @@
       "FusionCharts": true
     },
     "rules": {
-      "semi": [
-        "error",
-        "always"
-      ]
+      "one-var": ["off"],
+      "unused-vars": ["warn"],
+      "semi": ["error", "always"],
+      "no-unused-vars": ["warn"]
     }
 }
