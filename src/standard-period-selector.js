@@ -471,7 +471,6 @@ module.exports = function (dep) {
         }
         for (let j = startMultiplier; j >= 0; j--) {
           margin = (i === self.noCalcButtons && j === 0) ? 5 : 0;
-          console.log(endActive, i, self.noCalcButtons, j, margin);
           calculatedButtons[i] = new this.toolbox.Symbol(self.standardCalculatedPeriods[i].multipliers[j] + self.standardCalculatedPeriods[i].abbreviation, true, {
             paper: this.graphics.paper,
             chart: this.chart,
@@ -646,8 +645,12 @@ module.exports = function (dep) {
         bBox,
         x1,
         x2,
-        y2;
+        y2,
+        selectLine;
 
+      selectLine = this.saveSelectLine || this.graphics.paper.path({
+        'stroke': '#ff0000'
+      }).toFront();
       x = x === undefined ? measurement.x : x;
       y = y === undefined ? measurement.y : y;
       width = width === undefined ? measurement.width : width;
@@ -659,8 +662,8 @@ module.exports = function (dep) {
           toolbar.draw(x, y, group);
         }
       }
+      this.saveSelectLine = selectLine;
 
-      console.log(toolbars);
       for (let i = 0, ii = toolbars[0].componentGroups[1].symbolList; i < ii.length; i++) {
         if (ii[i].symbol === this.clickedId) {
           boundElement = ii[i].getBoundElement();
@@ -669,11 +672,9 @@ module.exports = function (dep) {
           x2 = bBox.x2;
           y2 = bBox.y2;
 
-          this.graphics.paper.path({
-            path: ['M', x1, y2 - 2 / 2, 'L', x2, y2 - 2 / 2],
-            'stroke': '#ff0000'
-          }).toFront();
-          // this._parentGroup.setState(this);
+          selectLine.attr({
+            path: ['M', x1, y2 - 2 / 2, 'L', x2, y2 - 2 / 2]
+          });
         }
       }
     };
