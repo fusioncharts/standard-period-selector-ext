@@ -13,12 +13,11 @@ window.stPS = new StandardPeriodSelector();
          return factory(win, true);
        };
   } else {
-    env.Aggregator = factory(env, true);
+    env.StandardPeriodSelector = factory(env, true);
   }
 })(typeof window !== 'undefined' ? window : this, function (_window, windowExists) {
   var FC = _window.FusionCharts;
-
   FC.register('extension', ['private', 'StandardPeriodSelector', function () {
-    FC.registerComponent('extensions', 'StandardPeriodSelector', StandardPeriodSelector);
+    FC.registerComponent('extensions', 'StandardPeriodSelector', StandardPeriodSelector({FusionCharts: FC}));
   }]);
 });
