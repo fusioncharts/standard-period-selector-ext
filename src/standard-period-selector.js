@@ -423,8 +423,13 @@ module.exports = function (dep) {
         text: {
           style: {
             'font-size': '15',
-            'fontFamily': 'MyriadPro'
+            'font-family': 'MyriadPro',
+            'fill': '#696969',
+            'font-weight': 'bold'
           }
+        },
+        container: {
+          height: 20
         }
       });
       group.addSymbol(fromDateLabel);
@@ -440,9 +445,14 @@ module.exports = function (dep) {
         symbolStroke: '#000000',
         strokeWidth: '1',
         hoverFill: '#7f7f7f',
+        height: 20,
         radius: 1,
         margin: {
           right: 5
+        },
+        btnTextStyle: {
+          'fontFamily': 'MyriadPro',
+          'fontSize': '12'
         }
       }).attachEventHandlers({
         click: function () {
@@ -483,9 +493,14 @@ module.exports = function (dep) {
             symbolStroke: '#000000',
             strokeWidth: '1',
             hoverFill: '#7f7f7f',
+            height: 20,
             radius: 1,
             margin: {
               right: margin
+            },
+            btnTextStyle: {
+              'fontFamily': 'MyriadPro',
+              'fontSize': '12'
             }
           }).attachEventHandlers({
             'click': function () {
@@ -517,10 +532,15 @@ module.exports = function (dep) {
           symbolStrokeWidth: '2',
           symbolStroke: '#000000',
           strokeWidth: '1',
+          height: 20,
           hoverFill: '#7f7f7f',
           radius: 1,
           margin: {
             right: 0
+          },
+          btnTextStyle: {
+            'fontFamily': 'MyriadPro',
+            'fontSize': '12'
           }
         }).attachEventHandlers({
           'click': function () {
