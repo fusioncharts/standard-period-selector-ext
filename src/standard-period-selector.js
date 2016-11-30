@@ -451,8 +451,7 @@ module.exports = function (dep) {
           self.clickedId = 'ALL';
           self.toolbars.pop();
           self.toolbars.push(self.createToolbar());
-          self.getLogicalSpace();
-          self.draw();
+          self._ref.reAllocate(self.parentGroup);
         }
       });
 
@@ -497,8 +496,7 @@ module.exports = function (dep) {
               toolbar.dispose();
               self.toolbars.pop();
               self.toolbars.push(self.createToolbar());
-              self.getLogicalSpace();
-              self.draw();
+              self._ref.reAllocate(self.parentGroup);
               // this.toolbars[this.toolbars.length - 1] = this.createToolbar();
             }
           });
@@ -532,8 +530,7 @@ module.exports = function (dep) {
             toolbar.dispose();
             self.toolbars.pop();
             self.toolbars.push(self.createToolbar());
-            self.getLogicalSpace();
-            self.draw();
+            self._ref.reAllocate(self.parentGroup);
           }
         });
         unigroup.addSymbol(contextualButtons[i]);
@@ -560,7 +557,7 @@ module.exports = function (dep) {
     };
 
     getLogicalSpace (availableWidth, availableHeight) {
-      availableWidth /= 2;
+      // availableWidth /= 2;
       var logicalSpace,
         width = 0,
         height = 0,
@@ -580,6 +577,10 @@ module.exports = function (dep) {
         height: height
       };
     };
+
+    getDefaultGroup () {
+      return this.parentGroup;
+    }
 
     placeInCanvas () {
       var self = this;
@@ -614,7 +615,8 @@ module.exports = function (dep) {
               },
               dimensions: [function () {
                 var parent = this.getParentComponentGroup();
-                return self.getLogicalSpace(parent.getWidth(), parent.getHeight());
+                self._ref = this;
+                return self.getLogicalSpace((self._pWidth = parent.getWidth()), (self._pHeight = parent.getHeight()));
               }]
             }]
           }]
@@ -657,6 +659,7 @@ module.exports = function (dep) {
           toolbar.draw(x, y, group);
         }
       }
+
       console.log(toolbars);
       for (let i = 0, ii = toolbars[0].componentGroups[1].symbolList; i < ii.length; i++) {
         if (ii[i].symbol === this.clickedId) {
