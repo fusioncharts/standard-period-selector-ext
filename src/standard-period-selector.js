@@ -25,14 +25,14 @@ module.exports = function (dep) {
       this.standardContexualPeriods = [];
       this.startPointUnit = 0;
       this.startPointMultiplier = 0;
-      this.clickedId;
+      this.clickedId = 'ALL';
       this.noCalcButtons = 0;
       this.timePeriods = [{
         'name': 'second',
         'milliseconds': 1000,
         'startingPoint': 0,
         'total': 60,
-        'abbreviation': 'sec',
+        'abbreviation': 's',
         'description': 'SECOND',
         'parent': 'minute',
         'multipliers': [1, 5, 15, 30]
@@ -41,7 +41,7 @@ module.exports = function (dep) {
         'milliseconds': 60000,
         'startingPoint': 0,
         'total': 60,
-        'abbreviation': 'min',
+        'abbreviation': 'm',
         'description': 'MINUTE',
         'parent': 'hour',
         'multipliers': [1, 5, 15, 30]
@@ -50,7 +50,7 @@ module.exports = function (dep) {
         'milliseconds': 3600000,
         'startingPoint': 0,
         'total': 24,
-        'abbreviation': 'hr',
+        'abbreviation': 'H',
         'description': 'HOUR',
         'parent': 'day',
         'multipliers': [1, 3, 6, 12]
@@ -78,7 +78,7 @@ module.exports = function (dep) {
         'startingPoint': 0,
         'abbreviation': 'Y',
         'description': 'YEAR',
-        'multipliers': [1, 3, 5]
+        'multipliers': [1]
       }];
       this.tdButtons = [
         {
@@ -323,6 +323,7 @@ module.exports = function (dep) {
         'globalReactiveModel',
         'spaceManagerInstance',
         'smartLabel',
+        'chartInstance',
         function (
               xAxis,
               yAxis,
@@ -335,7 +336,8 @@ module.exports = function (dep) {
               reactiveModel,
               globalReactiveModel,
               spaceManagerInstance,
-              smartLabel) {
+              smartLabel,
+              chartInstance) {
           instance.xAxis = xAxis;
           instance.yAxis = yAxis;
           instance.graphics = graphics;
@@ -348,6 +350,7 @@ module.exports = function (dep) {
           instance.globalReactiveModel = globalReactiveModel;
           instance.spaceManagerInstance = spaceManagerInstance;
           instance.smartLabel = smartLabel;
+          instance.chartInstance = chartInstance;
         }
       ]);
       this.spaceManagerInstance = instance.spaceManagerInstance;
@@ -359,7 +362,11 @@ module.exports = function (dep) {
       this.setActivePeriod(this.startActiveWindow, this.endActiveWindow);
       // instance.globalReactiveModel.model['_x-axis-visible-range-start'] += 124416000000;
       this.setActivePeriod(this.startActiveWindow, this.endActiveWindow);
-
+      this.timeRules = this.chartInstance.apiInstance.getComponentStore();
+      this.timeRules = this.timeRules.getCanvasByIndex(0).composition.impl;
+      this.timeRules = this.timeRules.getDataAggregator();
+      this.timeRules = this.timeRules.getAggregationTimeRules();
+      console.log(this.timeRules);
       this.toolbars = [];
 
       this.measurement = {};
@@ -461,7 +468,9 @@ module.exports = function (dep) {
           self.clickedId = 'ALL';
           self.toolbars.pop();
           self.toolbars.push(self.createToolbar());
-          self._ref.reAllocate(self.parentGroup);
+          self.getLogicalSpace();
+          self.draw();
+          // self._ref.reAllocate(self.parentGroup);
         }
       });
 
@@ -510,7 +519,9 @@ module.exports = function (dep) {
               toolbar.dispose();
               self.toolbars.pop();
               self.toolbars.push(self.createToolbar());
-              self._ref.reAllocate(self.parentGroup);
+              self.getLogicalSpace();
+              self.draw();
+              // self._ref.reAllocate(self.parentGroup);
               // this.toolbars[this.toolbars.length - 1] = this.createToolbar();
             }
           });
@@ -549,7 +560,9 @@ module.exports = function (dep) {
             toolbar.dispose();
             self.toolbars.pop();
             self.toolbars.push(self.createToolbar());
-            self._ref.reAllocate(self.parentGroup);
+            self.getLogicalSpace();
+            self.draw();
+            // self._ref.reAllocate(self.parentGroup);
           }
         });
         unigroup.addSymbol(contextualButtons[i]);
@@ -575,24 +588,24 @@ module.exports = function (dep) {
       return toolbar;
     };
 
-    getLogicalSpace (availableWidth, availableHeight) {
+    getLogicalSpace (availableWidth = this._pWidth, availableHeight = this._pHeight) {
       // availableWidth /= 2;
       var logicalSpace,
-        width = 0,
+        width = 420,
         height = 0,
         i,
         ln;
 
       for (i = 0, ln = this.toolbars.length; i < ln; i++) {
         logicalSpace = this.toolbars[i].getLogicalSpace(availableWidth, availableHeight);
-        width = Math.max(logicalSpace.width, width);
+        // width = Math.max(logicalSpace.width, width);
         height += logicalSpace.height;
         this.toolbars[i].width = logicalSpace.width;
         this.toolbars[i].height = logicalSpace.height;
       }
       height += this.padding;
       return {
-        width: width,
+        width: 420,
         height: height
       };
     };
