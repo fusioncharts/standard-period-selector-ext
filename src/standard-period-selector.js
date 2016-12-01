@@ -591,7 +591,7 @@ module.exports = function (dep) {
     getLogicalSpace (availableWidth = this._pWidth, availableHeight = this._pHeight) {
       // availableWidth /= 2;
       var logicalSpace,
-        width = 420,
+        width = 420, // width hardcoded; TODO: make it dynamic
         height = 0,
         i,
         ln;
@@ -605,7 +605,7 @@ module.exports = function (dep) {
       }
       height += this.padding;
       return {
-        width: 420,
+        width: width,
         height: height
       };
     };
