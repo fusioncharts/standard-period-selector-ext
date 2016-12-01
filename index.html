@@ -13,7 +13,7 @@
   <!-- <script src='bower_components/fusioncharts/fusioncharts.timeseries.js' charset='utf-8'></script> -->
   <script src='../xt-edge/out/build/source/fusioncharts.timeseries.js' charset='utf-8'></script>
   <!-- <script src='bower_components/fusioncharts/toolboxext.js' charset='utf-8'></script> -->
-  <script src='dist/standard-period-selector-es6.min.js' charset='utf-8'></script>
+  <script src='dist/standard-period-selector-es5.min.js' charset='utf-8'></script>
   <div id='chart-container'></div>
   <script type='text/javascript'>
     var tsChart;
@@ -143,6 +143,11 @@
                           }
                         }]
 
+                    },
+                    extensions: {
+                      'StandardPeriodSelector': {
+                        'abc': '123'
+                      }
                     }
                 }
 

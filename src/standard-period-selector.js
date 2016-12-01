@@ -50,7 +50,7 @@ module.exports = function (dep) {
         'milliseconds': 3600000,
         'startingPoint': 0,
         'total': 24,
-        'abbreviation': 'H',
+        'abbreviation': 'h',
         'description': 'HOUR',
         'parent': 'day',
         'multipliers': [1, 3, 6, 12]
@@ -155,6 +155,7 @@ module.exports = function (dep) {
               'abbreviation': this.timePeriods[i].abbreviation,
               'description': this.timePeriods[i].description,
               'milliseconds': this.timePeriods[i].milliseconds,
+              'name': this.timePeriods[i].name,
               'multipliers': [1]
             });
           } else { // if the unit is of the order of the target block and calculating the multipliers
@@ -162,6 +163,7 @@ module.exports = function (dep) {
               'abbreviation': this.timePeriods[i].abbreviation,
               'description': this.timePeriods[i].description,
               'milliseconds': this.timePeriods[i].milliseconds,
+              'name': this.timePeriods[i].name,
               'multipliers': []
             });
             // calculating and populating the applicable multpliers of each unit
@@ -323,6 +325,7 @@ module.exports = function (dep) {
         'globalReactiveModel',
         'spaceManagerInstance',
         'smartLabel',
+        'extData',
         'chartInstance',
         function (
               xAxis,
@@ -337,6 +340,7 @@ module.exports = function (dep) {
               globalReactiveModel,
               spaceManagerInstance,
               smartLabel,
+              extData,
               chartInstance) {
           instance.xAxis = xAxis;
           instance.yAxis = yAxis;
@@ -350,6 +354,7 @@ module.exports = function (dep) {
           instance.globalReactiveModel = globalReactiveModel;
           instance.spaceManagerInstance = spaceManagerInstance;
           instance.smartLabel = smartLabel;
+          instance.extData = extData;
           instance.chartInstance = chartInstance;
         }
       ]);
@@ -366,9 +371,7 @@ module.exports = function (dep) {
       this.timeRules = this.timeRules.getCanvasByIndex(0).composition.impl;
       this.timeRules = this.timeRules.getDataAggregator();
       this.timeRules = this.timeRules.getAggregationTimeRules();
-      console.log(this.timeRules);
       this.toolbars = [];
-
       this.measurement = {};
 
       this.toolbars.push(this.createToolbar());
@@ -429,14 +432,13 @@ module.exports = function (dep) {
       }, {
         text: {
           style: {
-            'font-size': '15',
-            'font-family': 'MyriadPro',
-            'fill': '#696969',
-            'font-weight': 'bold'
+            'font-family': '"Lucida Grande", sans-serif',
+            'font-size': '13',
+            'fill': '#696969'
           }
         },
         container: {
-          height: 20
+          height: 22
         }
       });
       group.addSymbol(fromDateLabel);
@@ -449,17 +451,20 @@ module.exports = function (dep) {
         fill: '#ffffff',
         labelFill: '#696969',
         symbolStrokeWidth: '2',
-        symbolStroke: '#000000',
+        stroke: '#ced5d4',
         strokeWidth: '1',
-        hoverFill: '#7f7f7f',
-        height: 20,
+        hoverFill: '#ced5d4',
+        height: 22,
         radius: 1,
         margin: {
           right: 5
         },
         btnTextStyle: {
-          'fontFamily': 'MyriadPro',
-          'fontSize': '12'
+          'fontFamily': '"Lucida Grande", sans-serif',
+          'fontSize': '13',
+          'fill': '#696969',
+          'line-height': '1',
+          'letter-spacing': '-0.04em'
         }
       }).attachEventHandlers({
         click: function () {
@@ -471,7 +476,8 @@ module.exports = function (dep) {
           self.getLogicalSpace();
           self.draw();
           // self._ref.reAllocate(self.parentGroup);
-        }
+        },
+        tooltext: 'ALL'
       });
 
       unigroup.addSymbol(allButton);
@@ -499,17 +505,20 @@ module.exports = function (dep) {
             fill: '#ffffff',
             labelFill: '#696969',
             symbolStrokeWidth: '2',
-            symbolStroke: '#000000',
+            stroke: '#ced5d4',
             strokeWidth: '1',
-            hoverFill: '#7f7f7f',
-            height: 20,
+            hoverFill: '#ced5d4',
+            height: 22,
             radius: 1,
             margin: {
               right: margin
             },
             btnTextStyle: {
-              'fontFamily': 'MyriadPro',
-              'fontSize': '12'
+              'fontFamily': '"Lucida Grande", sans-serif',
+              'fontSize': '13',
+              'fill': '#696969',
+              'line-height': '1',
+              'letter-spacing': '-0.04em'
             }
           }).attachEventHandlers({
             'click': function () {
@@ -523,7 +532,8 @@ module.exports = function (dep) {
               self.draw();
               // self._ref.reAllocate(self.parentGroup);
               // this.toolbars[this.toolbars.length - 1] = this.createToolbar();
-            }
+            },
+            tooltext: self.standardCalculatedPeriods[i].multipliers[j] + ' ' + self.standardCalculatedPeriods[i].description
           });
           unigroup.addSymbol(calculatedButtons[i]);
         }
@@ -541,17 +551,20 @@ module.exports = function (dep) {
           fill: '#ffffff',
           labelFill: '#696969',
           symbolStrokeWidth: '2',
-          symbolStroke: '#000000',
+          stroke: '#ced5d4',
           strokeWidth: '1',
-          height: 20,
-          hoverFill: '#7f7f7f',
+          height: 22,
+          hoverFill: '#ced5d4',
           radius: 1,
           margin: {
             right: 0
           },
           btnTextStyle: {
-            'fontFamily': 'MyriadPro',
-            'fontSize': '12'
+            'fontFamily': '"Lucida Grande", sans-serif',
+            'fontSize': '13',
+            'fill': '#696969',
+            'line-height': '1',
+            'letter-spacing': '-0.04em'
           }
         }).attachEventHandlers({
           'click': function () {
@@ -563,7 +576,8 @@ module.exports = function (dep) {
             self.getLogicalSpace();
             self.draw();
             // self._ref.reAllocate(self.parentGroup);
-          }
+          },
+          tooltext: this.standardContexualPeriods[i].description
         });
         unigroup.addSymbol(contextualButtons[i]);
       }
@@ -682,7 +696,8 @@ module.exports = function (dep) {
         selectLine;
 
       selectLine = this.saveSelectLine || this.graphics.paper.path({
-        'stroke': '#ff0000'
+        'stroke': '#c95a5a',
+        'stroke-width': '2px'
       }).toFront();
       x = x === undefined ? measurement.x : x;
       y = y === undefined ? measurement.y : y;
@@ -706,7 +721,7 @@ module.exports = function (dep) {
           y2 = bBox.y2;
 
           selectLine.attr({
-            path: ['M', x1, y2 - 2 / 2, 'L', x2, y2 - 2 / 2]
+            path: ['M', x1 - 0.5, y2 - 0.5, 'L', x2 + 0.5, y2 - 0.5]
           });
         }
       }
