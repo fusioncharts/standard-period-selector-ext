@@ -286,17 +286,6 @@ module.exports = function (dep) {
       this.generateContextualButtons();
     }
 
-    setActivePeriodForButtonChange () {
-      var start,
-        end;
-      start = arguments[0];
-      end = arguments[1];
-      this.startActiveWindow = start;
-      this.endActiveWindow = end;
-      this.generateCalculatedButtons();
-      this.generateContextualButtons();
-    }
-
     /**
      * A function to set the start and end point of the
      * entire time-line
@@ -375,6 +364,7 @@ module.exports = function (dep) {
       this.timeRules = this.timeRules.getCanvasByIndex(0).composition.impl;
       this.timeRules = this.timeRules.getDataAggregator();
       this.timeRules = this.timeRules.getAggregationTimeRules();
+      console.log(this.timeRules);
       this.toolbars = [];
       this.measurement = {};
       this.flag = true;
@@ -383,12 +373,16 @@ module.exports = function (dep) {
 
       this.globalReactiveModel.onPropsChange(['x-axis-visible-range-start', 'x-axis-visible-range-end'],
         function (start, end) {
-          var temp = window.performance.now();
-          // console.log('Gap', temp - (window.tempTime || 0));
-          window.tempTime = temp;
           if (instance.flag) {
             instance.flag = false;
             instance.setActivePeriod(start[1], end[1]);
+            for (let i = 0; i < instance.standardCalculatedPeriods.length; i++) {
+              for (let j = 0; j < instance.standardCalculatedPeriods[i].multipliers.length; j++) {
+                if ((end[1] - start[1]) >= instance.timePeriods[i].multipliers[j] * instance.timePeriods[i].milliseconds) {
+                  instance.clickedId = instance.timePeriods[i].multipliers[j] + instance.timePeriods[i].abbreviation;
+                }
+              }
+            }
             instance.toolbar.dispose();
             instance.toolbars.pop();
             instance.toolbars.push(instance.createToolbar());
