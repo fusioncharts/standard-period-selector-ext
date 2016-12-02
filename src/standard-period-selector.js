@@ -269,7 +269,8 @@ module.exports = function (dep) {
      */
     setActivePeriod () {
       var start,
-        end;
+        end,
+        temp = window.performance.now();
       if (arguments.length === 1) {
         end = this.globalReactiveModel.model['x-axis-visible-range-end'];
         start = end - arguments[0];
@@ -277,12 +278,22 @@ module.exports = function (dep) {
         start = arguments[0];
         end = arguments[1];
       }
-
       this.startActiveWindow = start;
       this.endActiveWindow = end;
       this.generateCalculatedButtons();
       this.globalReactiveModel.model['x-axis-visible-range-start'] = this.startActiveWindow;
       this.globalReactiveModel.model['x-axis-visible-range-end'] = this.endActiveWindow;
+      this.generateContextualButtons();
+    }
+
+    setActivePeriodForButtonChange () {
+      var start,
+        end;
+      start = arguments[0];
+      end = arguments[1];
+      this.startActiveWindow = start;
+      this.endActiveWindow = end;
+      this.generateCalculatedButtons();
       this.generateContextualButtons();
     }
 
@@ -292,13 +303,6 @@ module.exports = function (dep) {
      * @param  {number} date stamp - A UNIX timestamp to be set as the start point of time-line
      * @param  {number} date stamp - A UNIX timestamp to be set as the end point of time-line
      */
-    setTimeline (start, end) {
-      this.startDataset = start;
-      this.endDataset = end;
-      document.getElementById('startActiveRange').innerHTML = new Date(this.startDataset);
-      document.getElementById('endActiveRange').innerHTML = new Date(this.endDataset);
-      this.generateCalculatedButtons();
-    }
 
     /**
      * A function to set the object to set the user preferences
@@ -373,8 +377,25 @@ module.exports = function (dep) {
       this.timeRules = this.timeRules.getAggregationTimeRules();
       this.toolbars = [];
       this.measurement = {};
+      this.flag = true;
 
       this.toolbars.push(this.createToolbar());
+
+      this.globalReactiveModel.onPropsChange(['x-axis-visible-range-start', 'x-axis-visible-range-end'],
+        function (start, end) {
+          var temp = window.performance.now();
+          // console.log('Gap', temp - (window.tempTime || 0));
+          window.tempTime = temp;
+          if (instance.flag) {
+            instance.flag = false;
+            instance.setActivePeriod(start[1], end[1]);
+            instance.toolbar.dispose();
+            instance.toolbars.pop();
+            instance.toolbars.push(instance.createToolbar());
+            instance.getLogicalSpace();
+            instance.draw();
+          }
+        });
       return this;
     };
 
@@ -385,7 +406,6 @@ module.exports = function (dep) {
         contextualButtons,
         allButton,
         self = this,
-        endActive = this.globalReactiveModel.model['x-axis-visible-range-end'],
         deductorAr = [],
         startMultiplier,
         deductor,
@@ -434,7 +454,8 @@ module.exports = function (dep) {
           style: {
             'font-family': '"Lucida Grande", sans-serif',
             'font-size': '13',
-            'fill': '#696969'
+            'fill': '#696969',
+            'font-weight': 'bold'
           }
         },
         container: {
@@ -599,6 +620,7 @@ module.exports = function (dep) {
 
       toolbar.addComponent(group);
       toolbar.addComponent(unigroup);
+      this.toolbar = toolbar;
       return toolbar;
     };
 
@@ -685,6 +707,7 @@ module.exports = function (dep) {
     draw (x, y, width, height, group) {
       var measurement = this.measurement,
         toolbars = this.toolbars,
+        self = this,
         ln,
         i,
         toolbar,
@@ -693,8 +716,10 @@ module.exports = function (dep) {
         x1,
         x2,
         y2,
-        selectLine;
+        selectLine,
+        model = this.globalReactiveModel;
 
+      this.flag = true;
       selectLine = this.saveSelectLine || this.graphics.paper.path({
         'stroke': '#c95a5a',
         'stroke-width': '2px'
