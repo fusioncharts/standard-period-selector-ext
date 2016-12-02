@@ -27,59 +27,65 @@ module.exports = function (dep) {
       this.startPointMultiplier = 0;
       this.clickedId = 'ALL';
       this.noCalcButtons = 0;
-      this.timePeriods = [{
-        'name': 'second',
-        'milliseconds': 1000,
-        'startingPoint': 0,
-        'total': 60,
-        'abbreviation': 's',
-        'description': 'SECOND',
-        'parent': 'minute',
-        'multipliers': [1, 5, 15, 30]
-      }, {
-        'name': 'minute',
-        'milliseconds': 60000,
-        'startingPoint': 0,
-        'total': 60,
-        'abbreviation': 'm',
-        'description': 'MINUTE',
-        'parent': 'hour',
-        'multipliers': [1, 5, 15, 30]
-      }, {
-        'name': 'hour',
-        'milliseconds': 3600000,
-        'startingPoint': 0,
-        'total': 24,
-        'abbreviation': 'h',
-        'description': 'HOUR',
-        'parent': 'day',
-        'multipliers': [1, 3, 6, 12]
-      }, {
-        'name': 'day',
-        'milliseconds': 86400000,
-        'startingPoint': 0,
-        'total': 30,
-        'abbreviation': 'D',
-        'description': 'DAY',
-        'parent': 'month',
-        'multipliers': [1, 7, 15]
-      }, {
-        'name': 'month',
-        'milliseconds': 2592000000,
-        'startingPoint': 0,
-        'total': 12,
-        'abbreviation': 'M',
-        'description': 'MONTH',
-        'parent': 'year',
-        'multipliers': [1, 3, 6]
-      }, {
-        'name': 'year',
-        'milliseconds': 31104000000,
-        'startingPoint': 0,
-        'abbreviation': 'Y',
-        'description': 'YEAR',
-        'multipliers': [1]
-      }];
+      // this.timePeriods = [
+      //   {
+      //     'name': 'second',
+      //     'milliseconds': 1000,
+      //     'startingPoint': 0,
+      //     'total': 60,
+      //     'abbreviation': 's',
+      //     'description': 'SECOND',
+      //     'parent': 'minute',
+      //     'multipliers': [1, 5, 15, 30]
+      //   },
+      //   {
+      //     'name': 'minute',
+      //     'milliseconds': 60000,
+      //     'startingPoint': 0,
+      //     'total': 60,
+      //     'abbreviation': 'm',
+      //     'description': 'MINUTE',
+      //     'parent': 'hour',
+      //     'multipliers': [1, 5, 15, 30]
+      //   },
+      //   {
+      //     'name': 'hour',
+      //     'milliseconds': 3600000,
+      //     'startingPoint': 0,
+      //     'total': 24,
+      //     'abbreviation': 'h',
+      //     'description': 'HOUR',
+      //     'parent': 'day',
+      //     'multipliers': [1, 3, 6, 12]
+      //   },
+      //   {
+      //     'name': 'day',
+      //     'milliseconds': 86400000,
+      //     'startingPoint': 0,
+      //     'total': 30,
+      //     'abbreviation': 'D',
+      //     'description': 'DAY',
+      //     'parent': 'month',
+      //     'multipliers': [1, 7, 15]
+      //   },
+      //   {
+      //     'name': 'month',
+      //     'milliseconds': 2592000000,
+      //     'startingPoint': 0,
+      //     'total': 12,
+      //     'abbreviation': 'M',
+      //     'description': 'MONTH',
+      //     'parent': 'year',
+      //     'multipliers': [1, 3, 6]
+      //   },
+      //   {
+      //     'name': 'year',
+      //     'milliseconds': 31104000000,
+      //     'startingPoint': 0,
+      //     'abbreviation': 'Y',
+      //     'description': 'YEAR',
+      //     'multipliers': [1]
+      //   }];
       this.tdButtons = [
         {
           'name': 'YTD',
@@ -148,27 +154,27 @@ module.exports = function (dep) {
       this.standardCalculatedPeriods = [];
       for (i = 0; i < this.timePeriods.length; i++) {
         // checking whether the unit is applicable for the current target block
-        if (targetBlock / this.timePeriods[i].milliseconds >= 1) {
+        if (targetBlock / this.timePeriods[i].interval >= 1) {
           // checking whether the unit is of the higher order and only multiplier 1 is applicable
-          if (Math.floor((activeWindow) / this.timePeriods[i].milliseconds) < 1) {
+          if (Math.floor((activeWindow) / this.timePeriods[i].interval) < 1) {
             this.standardCalculatedPeriods.push({
-              'abbreviation': this.timePeriods[i].abbreviation,
+              'abbreviation': this.timePeriods[i].abbreviation.single,
               'description': this.timePeriods[i].description,
-              'milliseconds': this.timePeriods[i].milliseconds,
+              'milliseconds': this.timePeriods[i].interval,
               'name': this.timePeriods[i].name,
               'multipliers': [1]
             });
           } else { // if the unit is of the order of the target block and calculating the multipliers
             this.standardCalculatedPeriods.push({
-              'abbreviation': this.timePeriods[i].abbreviation,
+              'abbreviation': this.timePeriods[i].abbreviation.single,
               'description': this.timePeriods[i].description,
-              'milliseconds': this.timePeriods[i].milliseconds,
+              'milliseconds': this.timePeriods[i].interval,
               'name': this.timePeriods[i].name,
               'multipliers': []
             });
             // calculating and populating the applicable multpliers of each unit
             for (j = 0; j < this.timePeriods[i].multipliers.length; j++) {
-              if (activeWindow / this.ratio < this.timePeriods[i].multipliers[j] * this.timePeriods[i].milliseconds) {
+              if (activeWindow / this.ratio < this.timePeriods[i].multipliers[j] * this.timePeriods[i].interval) {
                 this.standardCalculatedPeriods[this.standardCalculatedPeriods.length - 1].multipliers.push(
                   this.timePeriods[i].multipliers[j]
                   );
@@ -259,6 +265,24 @@ module.exports = function (dep) {
 
       this.standardContexualPeriods = buttons;
       // this.drawButtonsContextual(this.standardContexualPeriods);
+    }
+
+    processMultipliers (timeArr) {
+      for (let i = 0; i < timeArr.length; i++) {
+        let len = timeArr[i].possibleFactors.length;
+        timeArr[i].multipliers = [];
+        if (len === 1) {
+          timeArr[i].multipliers.push(timeArr[i].possibleFactors[0]);
+        } else if (len === 2) {
+          timeArr[i].multipliers.push(timeArr[i].possibleFactors[0]);
+          timeArr[i].multipliers.push(timeArr[i].possibleFactors[len - 1]);
+        } else {
+          timeArr[i].multipliers.push(timeArr[i].possibleFactors[0]);
+          timeArr[i].multipliers.push(Math.floor(timeArr[i].possibleFactors[len - 1] / 2));
+          timeArr[i].multipliers.push(timeArr[i].possibleFactors[len - 1]);
+        }
+      }
+      return timeArr;
     }
 
     /**
@@ -357,14 +381,13 @@ module.exports = function (dep) {
       this.startActiveWindow = instance.globalReactiveModel.model['x-axis-visible-range-start'];
       this.startDataset = instance.globalReactiveModel.model['x-axis-absolute-range-start'];
       this.endDataset = instance.globalReactiveModel.model['x-axis-absolute-range-end'];
-      this.setActivePeriod(this.startActiveWindow, this.endActiveWindow);
       // instance.globalReactiveModel.model['_x-axis-visible-range-start'] += 124416000000;
-      this.setActivePeriod(this.startActiveWindow, this.endActiveWindow);
       this.timeRules = this.chartInstance.apiInstance.getComponentStore();
       this.timeRules = this.timeRules.getCanvasByIndex(0).composition.impl;
       this.timeRules = this.timeRules.getDataAggregator();
       this.timeRules = this.timeRules.getAggregationTimeRules();
-      console.log(this.timeRules);
+      this.timePeriods = this.processMultipliers(this.timeRules);
+      this.setActivePeriod(this.startActiveWindow, this.endActiveWindow);
       this.toolbars = [];
       this.measurement = {};
       this.flag = true;
@@ -378,8 +401,9 @@ module.exports = function (dep) {
             instance.setActivePeriod(start[1], end[1]);
             for (let i = 0; i < instance.standardCalculatedPeriods.length; i++) {
               for (let j = 0; j < instance.standardCalculatedPeriods[i].multipliers.length; j++) {
-                if ((end[1] - start[1]) >= instance.timePeriods[i].multipliers[j] * instance.timePeriods[i].milliseconds) {
-                  instance.clickedId = instance.timePeriods[i].multipliers[j] + instance.timePeriods[i].abbreviation;
+                if ((end[1] - start[1]) >= instance.timePeriods[i].multipliers[j] * instance.timePeriods[i].interval) {
+                  instance.clickedId = instance.timePeriods[i].multipliers[j] + instance.timePeriods[i].abbreviation.single;
+                  console.log(instance.clickedId);
                 }
               }
             }
