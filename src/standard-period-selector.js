@@ -347,7 +347,7 @@ module.exports = function (dep) {
             for (let i = 0; i < instance.standardCalculatedPeriods.length; i++) {
               for (let j = 0; j < instance.standardCalculatedPeriods[i].multipliers.length; j++) {
                 if ((end[1] - start[1]) >= instance.timePeriods[i].multipliers[j] * instance.timePeriods[i].interval) {
-                  instance.clickedId = instance.timePeriods[i].multipliers[j] + instance.timePeriods[i].abbreviation.single;
+                  // instance.clickedId = instance.timePeriods[i].multipliers[j] + instance.timePeriods[i].abbreviation.single;
                 }
               }
             }
@@ -541,6 +541,7 @@ module.exports = function (dep) {
       contextualButtons = [];
 
       for (let i = 0; i < this.standardContexualPeriods.length; i++) {
+        margin = (i === 0) ? 5 : 0;
         contextualButtons[i] = new this.toolbox.Symbol(this.standardContexualPeriods[i].abbreviation, true, {
           paper: this.graphics.paper,
           chart: this.chart,
@@ -556,7 +557,8 @@ module.exports = function (dep) {
           hoverFill: '#ced5d4',
           radius: 1,
           margin: {
-            right: 0
+            right: 0,
+            left: margin
           },
           btnTextStyle: {
             'fontFamily': '"Lucida Grande", sans-serif',
@@ -716,9 +718,9 @@ module.exports = function (dep) {
           x2 = bBox.x2;
           y2 = bBox.y2;
 
-          // selectLine.attr({
-          //   path: ['M', x1 - 0.5, y2 - 0.5, 'L', x2 + 0.5, y2 - 0.5]
-          // });
+          selectLine.attr({
+            path: ['M', x1 - 0.5, y2 - 0.5, 'L', x2 + 0.5, y2 - 0.5]
+          });
         }
       }
     };
