@@ -27,65 +27,7 @@ module.exports = function (dep) {
       this.startPointMultiplier = 0;
       this.clickedId = 'ALL';
       this.noCalcButtons = 0;
-      // this.timePeriods = [
-      //   {
-      //     'name': 'second',
-      //     'milliseconds': 1000,
-      //     'startingPoint': 0,
-      //     'total': 60,
-      //     'abbreviation': 's',
-      //     'description': 'SECOND',
-      //     'parent': 'minute',
-      //     'multipliers': [1, 5, 15, 30]
-      //   },
-      //   {
-      //     'name': 'minute',
-      //     'milliseconds': 60000,
-      //     'startingPoint': 0,
-      //     'total': 60,
-      //     'abbreviation': 'm',
-      //     'description': 'MINUTE',
-      //     'parent': 'hour',
-      //     'multipliers': [1, 5, 15, 30]
-      //   },
-      //   {
-      //     'name': 'hour',
-      //     'milliseconds': 3600000,
-      //     'startingPoint': 0,
-      //     'total': 24,
-      //     'abbreviation': 'h',
-      //     'description': 'HOUR',
-      //     'parent': 'day',
-      //     'multipliers': [1, 3, 6, 12]
-      //   },
-      //   {
-      //     'name': 'day',
-      //     'milliseconds': 86400000,
-      //     'startingPoint': 0,
-      //     'total': 30,
-      //     'abbreviation': 'D',
-      //     'description': 'DAY',
-      //     'parent': 'month',
-      //     'multipliers': [1, 7, 15]
-      //   },
-      //   {
-      //     'name': 'month',
-      //     'milliseconds': 2592000000,
-      //     'startingPoint': 0,
-      //     'total': 12,
-      //     'abbreviation': 'M',
-      //     'description': 'MONTH',
-      //     'parent': 'year',
-      //     'multipliers': [1, 3, 6]
-      //   },
-      //   {
-      //     'name': 'year',
-      //     'milliseconds': 31104000000,
-      //     'startingPoint': 0,
-      //     'abbreviation': 'Y',
-      //     'description': 'YEAR',
-      //     'multipliers': [1]
-      //   }];
+      this.calculatedButtonObj = {};
       this.tdButtons = [
         {
           'name': 'YTD',
@@ -245,6 +187,9 @@ module.exports = function (dep) {
           dateStart.setHours(0);
           dateStart.setMinutes(0);
           dateStart.setSeconds(0);
+          if (+this.endDataset === +dateStart) {
+            dateStart = +dateStart - 86400000;
+          }
         }
 
         if (dateEnd < dateStart) {
@@ -403,7 +348,6 @@ module.exports = function (dep) {
               for (let j = 0; j < instance.standardCalculatedPeriods[i].multipliers.length; j++) {
                 if ((end[1] - start[1]) >= instance.timePeriods[i].multipliers[j] * instance.timePeriods[i].interval) {
                   instance.clickedId = instance.timePeriods[i].multipliers[j] + instance.timePeriods[i].abbreviation.single;
-                  console.log(instance.clickedId);
                 }
               }
             }
@@ -510,10 +454,10 @@ module.exports = function (dep) {
           self.setActivePeriod(self.startDataset, self.endDataset);
           toolbar.dispose();
           self.clickedId = 'ALL';
-          self.toolbars.pop();
-          self.toolbars.push(self.createToolbar());
-          self.getLogicalSpace();
-          self.draw();
+          // self.toolbars.pop();
+          // self.toolbars.push(self.createToolbar());
+          // self.getLogicalSpace();
+          // self.draw();
           // self._ref.reAllocate(self.parentGroup);
         },
         tooltext: 'ALL'
@@ -526,7 +470,10 @@ module.exports = function (dep) {
         }
       }
 
-      calculatedButtons = [];
+      calculatedButtons = {};
+      for (let key in this.calculatedButtonObj) {
+        this.calculatedButtonObj[key].hide();
+      }
       for (let i = self.startPointUnit; i >= 0; i--) {
         if (i === self.startPointUnit) {
           startMultiplier = self.startPointMultiplier;
@@ -535,48 +482,61 @@ module.exports = function (dep) {
         }
         for (let j = startMultiplier; j >= 0; j--) {
           margin = (i === self.noCalcButtons && j === 0) ? 5 : 0;
-          calculatedButtons[i] = new this.toolbox.Symbol(self.standardCalculatedPeriods[i].multipliers[j] + self.standardCalculatedPeriods[i].abbreviation, true, {
-            paper: this.graphics.paper,
-            chart: this.chart,
-            smartLabel: this.smartLabel,
-            chartContainer: this.graphics.container
-          }, {
-            fill: '#ffffff',
-            labelFill: '#696969',
-            symbolStrokeWidth: '2',
-            stroke: '#ced5d4',
-            strokeWidth: '1',
-            hoverFill: '#ced5d4',
-            height: 22,
-            radius: 1,
-            margin: {
-              right: margin
-            },
-            btnTextStyle: {
-              'fontFamily': '"Lucida Grande", sans-serif',
-              'fontSize': '13',
-              'fill': '#696969',
-              'line-height': '1',
-              'letter-spacing': '-0.04em'
-            }
-          }).attachEventHandlers({
-            'click': function () {
-              deductor = (self.standardCalculatedPeriods[i].multipliers[j] * self.standardCalculatedPeriods[i].milliseconds);
-              self.clickedId = self.standardCalculatedPeriods[i].multipliers[j] + self.standardCalculatedPeriods[i].abbreviation;
-              self.setActivePeriod(deductor);
-              toolbar.dispose();
-              self.toolbars.pop();
-              self.toolbars.push(self.createToolbar());
-              self.getLogicalSpace();
-              self.draw();
-              // self._ref.reAllocate(self.parentGroup);
-              // this.toolbars[this.toolbars.length - 1] = this.createToolbar();
-            },
-            tooltext: self.standardCalculatedPeriods[i].multipliers[j] + ' ' + self.standardCalculatedPeriods[i].description
-          });
-          unigroup.addSymbol(calculatedButtons[i]);
+          let keyAbb = self.standardCalculatedPeriods[i].multipliers[j] + self.standardCalculatedPeriods[i].abbreviation;
+          if (this.calculatedButtonObj[keyAbb] === undefined) {
+            calculatedButtons = new this.toolbox.Symbol(keyAbb, true, {
+              paper: this.graphics.paper,
+              chart: this.chart,
+              smartLabel: this.smartLabel,
+              chartContainer: this.graphics.container
+            }, {
+              fill: '#ffffff',
+              labelFill: '#696969',
+              symbolStrokeWidth: '2',
+              stroke: '#ced5d4',
+              strokeWidth: '1',
+              hoverFill: '#ced5d4',
+              height: 22,
+              radius: 1,
+              margin: {
+                right: 0
+              },
+              btnTextStyle: {
+                'fontFamily': '"Lucida Grande", sans-serif',
+                'fontSize': '13',
+                'fill': '#696969',
+                'line-height': '1',
+                'letter-spacing': '-0.04em'
+              }
+            }).attachEventHandlers({
+              'click': function () {
+                deductor = (self.standardCalculatedPeriods[i].multipliers[j] * self.standardCalculatedPeriods[i].milliseconds);
+                self.clickedId = self.standardCalculatedPeriods[i].multipliers[j] + self.standardCalculatedPeriods[i].abbreviation;
+                self.setActivePeriod(deductor);
+                // toolbar.dispose();
+                // self.toolbars.pop();
+                // self.toolbars.push(self.createToolbar());
+                // self.getLogicalSpace();
+                // self.draw();
+                // self._ref.reAllocate(self.parentGroup);
+                // this.toolbars[this.toolbars.length - 1] = this.createToolbar();
+              },
+              tooltext: self.standardCalculatedPeriods[i].multipliers[j] + ' ' + self.standardCalculatedPeriods[i].description
+            });
+            this.calculatedButtonObj[keyAbb] = calculatedButtons;
+          }
+          // unigroup.addSymbol(calculatedButtons[i]);
+          this.calculatedButtonObj[keyAbb].show();
+          unigroup.addSymbol(this.calculatedButtonObj[keyAbb]);
         }
       }
+
+      // for (let i = self.startPointUnit; i >= 0; i--) {
+      //   for (let j = startMultiplier; j >= 0; j--) {
+      //     let keyAbb = self.standardCalculatedPeriods[i].multipliers[j] + self.standardCalculatedPeriods[i].abbreviation;
+      //     unigroup.addSymbol(this.calculatedButtonObj[keyAbb]);
+      //   }
+      // }
 
       contextualButtons = [];
 
@@ -609,23 +569,17 @@ module.exports = function (dep) {
           'click': function () {
             self.setActivePeriod(self.standardContexualPeriods[i].dateStart, self.standardContexualPeriods[i].dateEnd);
             self.clickedId = self.standardContexualPeriods[i].abbreviation;
-            toolbar.dispose();
-            self.toolbars.pop();
-            self.toolbars.push(self.createToolbar());
-            self.getLogicalSpace();
-            self.draw();
+            // toolbar.dispose();
+            // self.toolbars.pop();
+            // self.toolbars.push(self.createToolbar());
+            // self.getLogicalSpace();
+            // self.draw();
             // self._ref.reAllocate(self.parentGroup);
           },
           tooltext: this.standardContexualPeriods[i].description
         });
         unigroup.addSymbol(contextualButtons[i]);
       }
-
-        // btn = document.createElement('BUTTON');
-        // btn.id = standardPeriods[i].abbreviation;
-        // btn.innerHTML = standardPeriods[i].abbreviation;
-        // btn.addEventListener('click', eventBtn.bind(this, standardPeriods[i]));
-        // contextualButtons.appendChild(btn);
 
       this.SymbolStore.register('textBoxIcon', function (x, y, rad, w, h, padX, padY) {
         var x1 = x - w / 2 + padX / 2,
@@ -754,7 +708,6 @@ module.exports = function (dep) {
         }
       }
       this.saveSelectLine = selectLine;
-
       for (let i = 0, ii = toolbars[0].componentGroups[1].symbolList; i < ii.length; i++) {
         if (ii[i].symbol === this.clickedId) {
           boundElement = ii[i].getBoundElement();
@@ -763,9 +716,9 @@ module.exports = function (dep) {
           x2 = bBox.x2;
           y2 = bBox.y2;
 
-          selectLine.attr({
-            path: ['M', x1 - 0.5, y2 - 0.5, 'L', x2 + 0.5, y2 - 0.5]
-          });
+          // selectLine.attr({
+          //   path: ['M', x1 - 0.5, y2 - 0.5, 'L', x2 + 0.5, y2 - 0.5]
+          // });
         }
       }
     };
