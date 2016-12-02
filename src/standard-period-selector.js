@@ -238,8 +238,7 @@ module.exports = function (dep) {
      */
     setActivePeriod () {
       var start,
-        end,
-        temp = window.performance.now();
+        end;
       if (arguments.length === 1) {
         end = this.globalReactiveModel.model['x-axis-visible-range-end'];
         start = end - arguments[0];
@@ -681,7 +680,6 @@ module.exports = function (dep) {
     draw (x, y, width, height, group) {
       var measurement = this.measurement,
         toolbars = this.toolbars,
-        self = this,
         ln,
         i,
         toolbar,
@@ -690,8 +688,7 @@ module.exports = function (dep) {
         x1,
         x2,
         y2,
-        selectLine,
-        model = this.globalReactiveModel;
+        selectLine;
 
       this.flag = true;
       selectLine = this.saveSelectLine || this.graphics.paper.path({
