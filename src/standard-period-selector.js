@@ -351,7 +351,7 @@ module.exports = function (dep) {
         'default-select': 'ALL',
         'posWrtCanvas': 'top',
         'layout': 'inline',
-        'alignment': 'right',
+        'alignment': 'left',
         'orientation': 'horizontal',
         'customMultipliers': {
           'millisecond': [1, 500],
