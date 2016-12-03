@@ -17,7 +17,7 @@ window.stPS = new StandardPeriodSelector();
   }
 })(typeof window !== 'undefined' ? window : this, function (_window, windowExists) {
   var FC = _window.FusionCharts;
-  FC.register('extension', ['private', 'StandardPeriodSelector', function () {
-    FC.registerComponent('extensions', 'StandardPeriodSelector', StandardPeriodSelector({FusionCharts: FC}));
+  FC.register('extension', ['private', 'standard-period-selector', function () {
+    FC.registerComponent('extensions', 'standard-period-selector', StandardPeriodSelector({FusionCharts: FC}));
   }]);
 });

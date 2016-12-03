@@ -213,10 +213,13 @@ module.exports = function (dep) {
     }
 
     processMultipliers (timeArr) {
+      var self = this;
       for (let i = 0; i < timeArr.length; i++) {
         let len = timeArr[i].possibleFactors.length;
         timeArr[i].multipliers = [];
-        if (len === 1) {
+        if (self.extData.customMultiplers[timeArr[i].name]) {
+          timeArr[i].multipliers = self.extData.customMultiplers[timeArr[i].name];
+        } else if (len === 1) {
           timeArr[i].multipliers.push(timeArr[i].possibleFactors[0]);
         } else if (len === 2) {
           timeArr[i].multipliers.push(timeArr[i].possibleFactors[0]);
@@ -372,7 +375,7 @@ module.exports = function (dep) {
         deductor,
         i,
         j,
-        margin,
+        contextualConfig,
         fromDateLabel,
         group;
 
@@ -410,45 +413,14 @@ module.exports = function (dep) {
       fromDateLabel = new this.toolbox.Label('Zoom:', {
         smartLabel: this.smartLabel,
         paper: this.graphics.paper
-      }, {
-        text: {
-          style: {
-            'font-family': '"Lucida Grande", sans-serif',
-            'font-size': '13',
-            'fill': '#696969',
-            'font-weight': 'bold'
-          }
-        },
-        container: {
-          height: 22
-        }
-      });
+      }, self.extData.style['label-config']);
       group.addSymbol(fromDateLabel);
       allButton = new this.toolbox.Symbol('ALL', true, {
         paper: this.graphics.paper,
         chart: this.chart,
         smartLabel: this.smartLabel,
         chartContainer: this.graphics.container
-      }, {
-        fill: '#ffffff',
-        labelFill: '#696969',
-        symbolStrokeWidth: '2',
-        stroke: '#ced5d4',
-        strokeWidth: '1',
-        hoverFill: '#ced5d4',
-        height: 22,
-        radius: 1,
-        margin: {
-          right: 5
-        },
-        btnTextStyle: {
-          'fontFamily': '"Lucida Grande", sans-serif',
-          'fontSize': '13',
-          'fill': '#696969',
-          'line-height': '1',
-          'letter-spacing': '-0.04em'
-        }
-      }).attachEventHandlers({
+      }, self.extData.style['all-config']).attachEventHandlers({
         click: function () {
           self.setActivePeriod(self.startDataset, self.endDataset);
           toolbar.dispose();
@@ -480,7 +452,6 @@ module.exports = function (dep) {
           startMultiplier = self.standardCalculatedPeriods[i].multipliers.length - 1;
         }
         for (let j = startMultiplier; j >= 0; j--) {
-          margin = (i === self.noCalcButtons && j === 0) ? 5 : 0;
           let keyAbb = self.standardCalculatedPeriods[i].multipliers[j] + self.standardCalculatedPeriods[i].abbreviation;
           if (this.calculatedButtonObj[keyAbb] === undefined) {
             calculatedButtons = new this.toolbox.Symbol(keyAbb, true, {
@@ -488,26 +459,7 @@ module.exports = function (dep) {
               chart: this.chart,
               smartLabel: this.smartLabel,
               chartContainer: this.graphics.container
-            }, {
-              fill: '#ffffff',
-              labelFill: '#696969',
-              symbolStrokeWidth: '2',
-              stroke: '#ced5d4',
-              strokeWidth: '1',
-              hoverFill: '#ced5d4',
-              height: 22,
-              radius: 1,
-              margin: {
-                right: 0
-              },
-              btnTextStyle: {
-                'fontFamily': '"Lucida Grande", sans-serif',
-                'fontSize': '13',
-                'fill': '#696969',
-                'line-height': '1',
-                'letter-spacing': '-0.04em'
-              }
-            }).attachEventHandlers({
+            }, self.extData.style['calculated-config']).attachEventHandlers({
               'click': function () {
                 deductor = (self.standardCalculatedPeriods[i].multipliers[j] * self.standardCalculatedPeriods[i].milliseconds);
                 self.clickedId = self.standardCalculatedPeriods[i].multipliers[j] + self.standardCalculatedPeriods[i].abbreviation;
@@ -540,33 +492,13 @@ module.exports = function (dep) {
       contextualButtons = [];
 
       for (let i = 0; i < this.standardContexualPeriods.length; i++) {
-        margin = (i === 0) ? 5 : 0;
+        contextualConfig = (i === 0) ? self.extData.style['contextual-config-first'] : self.extData.style['contextual-config'];
         contextualButtons[i] = new this.toolbox.Symbol(this.standardContexualPeriods[i].abbreviation, true, {
           paper: this.graphics.paper,
           chart: this.chart,
           smartLabel: this.smartLabel,
           chartContainer: this.graphics.container
-        }, {
-          fill: '#ffffff',
-          labelFill: '#696969',
-          symbolStrokeWidth: '2',
-          stroke: '#ced5d4',
-          strokeWidth: '1',
-          height: 22,
-          hoverFill: '#ced5d4',
-          radius: 1,
-          margin: {
-            right: 0,
-            left: margin
-          },
-          btnTextStyle: {
-            'fontFamily': '"Lucida Grande", sans-serif',
-            'fontSize': '13',
-            'fill': '#696969',
-            'line-height': '1',
-            'letter-spacing': '-0.04em'
-          }
-        }).attachEventHandlers({
+        }, contextualConfig).attachEventHandlers({
           'click': function () {
             self.setActivePeriod(self.standardContexualPeriods[i].dateStart, self.standardContexualPeriods[i].dateEnd);
             self.clickedId = self.standardContexualPeriods[i].abbreviation;
@@ -640,19 +572,19 @@ module.exports = function (dep) {
           return 2;
         },
         layout: function (obj) {
-          return obj.inline;
+          return obj[self.extData.layout];
         },
         orientation: [{
           type: function (obj) {
-            return obj.horizontal;
+            return obj[self.extData.orientation];
           },
           position: [{
             type: function (obj) {
-              return obj.top;
+              return obj[self.extData.posWrtCanvas];
             },
             alignment: [{
               type: function (obj) {
-                return obj.left;
+                return obj[self.extData.alignment];
               },
               dimensions: [function () {
                 var parent = this.getParentComponentGroup();

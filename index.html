@@ -145,8 +145,120 @@
 
                     },
                     extensions: {
-                      'StandardPeriodSelector': {
-                        'abc': '123'
+                      'standard-period-selector': {
+                        'default-select': 'ALL',
+                        'posWrtCanvas': 'top',
+                        'layout': 'inline',
+                        'alignment': 'right',
+                        'orientation': 'horizontal',
+                        'customMultiplers': {
+                          'second': [1, 5, 15, 30],
+                          'minute': [1, 5, 15, 30],
+                          'hour': [1, 3, 6, 12],
+                          'day': [1, 7, 15],
+                          'month': [1, 3, 6],
+                          'year': [1, 3]
+                        },
+                        'style': {
+                          'label-config': {
+                            // --config--
+                            text: {
+                              style: {
+                                'font-family': '"Lucida Grande", sans-serif',
+                                'font-size': '13',
+                                'fill': '#696969',
+                                'font-weight': 'bold'
+                              }
+                            },
+                            container: {
+                              height: 22
+                            }
+                          },
+                          'all-config': {
+                            // --config--
+                            fill: '#ffffff',
+                            labelFill: '#696969',
+                            symbolStrokeWidth: '2',
+                            stroke: '#ced5d4',
+                            strokeWidth: '1',
+                            hoverFill: '#ced5d4',
+                            height: 22,
+                            radius: 1,
+                            margin: {
+                              right: 5
+                            },
+                            btnTextStyle: {
+                              'fontFamily': '"Lucida Grande", sans-serif',
+                              'fontSize': '13',
+                              'fill': '#696969',
+                              'line-height': '1',
+                              'letter-spacing': '-0.04em'
+                            }
+                          },
+                          'calculated-config': {
+                            // --config--
+                            fill: '#ffffff',
+                            labelFill: '#696969',
+                            symbolStrokeWidth: '2',
+                            stroke: '#ced5d4',
+                            strokeWidth: '1',
+                            hoverFill: '#ced5d4',
+                            height: 22,
+                            radius: 1,
+                            margin: {
+                              right: 0
+                            },
+                            btnTextStyle: {
+                              'fontFamily': '"Lucida Grande", sans-serif',
+                              'fontSize': '13',
+                              'fill': '#696969',
+                              'line-height': '1',
+                              'letter-spacing': '-0.04em'
+                            }
+                          },
+                          'contextual-config-first': {
+                            fill: '#ffffff',
+                            labelFill: '#696969',
+                            symbolStrokeWidth: '2',
+                            stroke: '#ced5d4',
+                            strokeWidth: '1',
+                            height: 22,
+                            hoverFill: '#ced5d4',
+                            radius: 1,
+                            margin: {
+                              right: 0,
+                              left: 5
+                            },
+                            btnTextStyle: {
+                              'fontFamily': '"Lucida Grande", sans-serif',
+                              'fontSize': '13',
+                              'fill': '#696969',
+                              'line-height': '1',
+                              'letter-spacing': '-0.04em'
+                            }
+                          },
+                          'contextual-config': {
+                            fill: '#ffffff',
+                            labelFill: '#696969',
+                            symbolStrokeWidth: '2',
+                            stroke: '#ced5d4',
+                            strokeWidth: '1',
+                            height: 22,
+                            hoverFill: '#ced5d4',
+                            radius: 1,
+                            margin: {
+                              right: 0,
+                              left: 0
+                            },
+                            btnTextStyle: {
+                              'fontFamily': '"Lucida Grande", sans-serif',
+                              'fontSize': '13',
+                              'fill': '#696969',
+                              'line-height': '1',
+                              'letter-spacing': '-0.04em'
+                            }
+                          }
+                        }
                       }
                     }
                 }
