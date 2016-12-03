@@ -128,6 +128,7 @@
 	      this.noCalcButtons = 0;
 	      this.calculatedButtonObj = {};
 	      this.minimumBucket = 1;
+
 	      this.tdButtons = [{
 	        'name': 'YTD',
 	        'abbreviation': 'YTD',
@@ -319,7 +320,7 @@
 	          var len = timeArr[i].possibleFactors.length,
 	              timeName = timeArr[i] && timeArr[i].name,
 	              timeObj = timeArr && timeArr[i],
-	              customMultipliers = self.extData && self.extData.customMultipliers || {};
+	              customMultipliers = self && self.customMultipliers || {};
 	          timeObj.multipliers = [];
 	          if (customMultipliers[timeName]) {
 	            timeObj.multipliers = customMultipliers[timeName];
@@ -409,7 +410,7 @@
 	          instance.globalReactiveModel = globalReactiveModel;
 	          instance.spaceManagerInstance = spaceManagerInstance;
 	          instance.smartLabel = smartLabel;
-	          instance.extData = extData;
+	          instance.extDataUser = extData;
 	          instance.chartInstance = chartInstance;
 	        }]);
 	        instance.endActiveWindow = instance.globalReactiveModel.model['x-axis-visible-range-end'];
@@ -422,6 +423,123 @@
 	        instance.timeRules = instance.timeRules.getDataAggregator();
 	        instance.timeRules = instance.timeRules.getAggregationTimeRules();
 	        instance.timePeriods = instance.processMultipliers(instance.timeRules);
+	        instance.extData = {
+	          'default-select': 'ALL',
+	          'posWrtCanvas': 'top',
+	          'layout': 'inline',
+	          'alignment': 'right',
+	          'orientation': 'horizontal',
+	          'customMultipliers': {
+	            'millisecond': [1, 500],
+	            'second': [1, 5, 15, 30],
+	            'minute': [1, 5, 15, 30],
+	            'hour': [1, 3, 6, 12],
+	            'day': [1, 7, 15],
+	            'month': [1, 3, 6],
+	            'year': [1, 3, 5]
+	          },
+	          'style': {
+	            'label-config': {
+	              // --config--
+	              text: {
+	                style: {
+	                  'font-family': '"Lucida Grande", sans-serif',
+	                  'font-size': '13',
+	                  'fill': '#696969',
+	                  'font-weight': 'bold'
+	                }
+	              },
+	              container: {
+	                height: 22
+	              }
+	            },
+	            'all-config': {
+	              // --config--
+	              fill: '#ffffff',
+	              labelFill: '#696969',
+	              symbolStrokeWidth: '2',
+	              stroke: '#ced5d4',
+	              strokeWidth: '1',
+	              hoverFill: '#ced5d4',
+	              height: 22,
+	              radius: 1,
+	              margin: {
+	                right: 5
+	              },
+	              btnTextStyle: {
+	                'fontFamily': '"Lucida Grande", sans-serif',
+	                'fontSize': '13',
+	                'fill': '#696969',
+	                'line-height': '1',
+	                'letter-spacing': '-0.04em'
+	              }
+	            },
+	            'calculated-config': {
+	              // --config--
+	              fill: '#ffffff',
+	              labelFill: '#696969',
+	              symbolStrokeWidth: '2',
+	              stroke: '#ced5d4',
+	              strokeWidth: '1',
+	              hoverFill: '#ced5d4',
+	              height: 22,
+	              radius: 1,
+	              margin: {
+	                right: 0
+	              },
+	              btnTextStyle: {
+	                'fontFamily': '"Lucida Grande", sans-serif',
+	                'fontSize': '13',
+	                'fill': '#696969',
+	                'line-height': '1',
+	                'letter-spacing': '-0.04em'
+	              }
+	            },
+	            'contextual-config-first': {
+	              fill: '#ffffff',
+	              labelFill: '#696969',
+	              symbolStrokeWidth: '2',
+	              stroke: '#ced5d4',
+	              strokeWidth: '1',
+	              height: 22,
+	              hoverFill: '#ced5d4',
+	              radius: 1,
+	              margin: {
+	                right: 0,
+	                left: 5
+	              },
+	              btnTextStyle: {
+	                'fontFamily': '"Lucida Grande", sans-serif',
+	                'fontSize': '13',
+	                'fill': '#696969',
+	                'line-height': '1',
+	                'letter-spacing': '-0.04em'
+	              }
+	            },
+	            'contextual-config': {
+	              fill: '#ffffff',
+	              labelFill: '#696969',
+	              symbolStrokeWidth: '2',
+	              stroke: '#ced5d4',
+	              strokeWidth: '1',
+	              height: 22,
+	              hoverFill: '#ced5d4',
+	              radius: 1,
+	              margin: {
+	                right: 0,
+	                left: 0
+	              },
+	              btnTextStyle: {
+	                'fontFamily': '"Lucida Grande", sans-serif',
+	                'fontSize': '13',
+	                'fill': '#696969',
+	                'line-height': '1',
+	                'letter-spacing': '-0.04em'
+	              }
+	            }
+	          }
+	        };
+	        Object.assign(instance.extData, instance.extDataUser);
 	        // instance.minimumBucket = +instance.globalReactiveModel['x-axis-maximum-allowed-ticks'] *
 	        //   +instance.globalReactiveModel['minimum-consecutive-datestamp-diff;'];
 	        // minimum-consecutive-datestamp-diff
@@ -429,6 +547,16 @@
 	        // console.log(instance.globalReactiveModel);
 	        // console.log(instance.globalReactiveModel.model['x-axis-maximum-allowed-ticks']);
 	        // console.log(instance.globalReactiveModel.model['minimum-consecutive-datestamp-diff;']);
+	        instance.customMultipliers = instance.extData.customMultipliers || {
+	          'millisecond': [1, 500],
+	          'second': [1, 5, 15, 30],
+	          'minute': [1, 5, 15, 30],
+	          'hour': [1, 3, 6, 12],
+	          'day': [1, 7, 15],
+	          'month': [1, 3, 6],
+	          'year': [1, 3]
+	        };
+
 	        instance.setActivePeriod(instance.startActiveWindow, instance.endActiveWindow);
 	        instance.toolbars = [];
 	        instance.measurement = {};
@@ -458,9 +586,9 @@
 	          for (var _i = 0; _i < instance.standardCalculatedPeriods.length; _i++) {
 	            for (var _j = 0; _j < instance.standardCalculatedPeriods[_i].multipliers.length; _j++) {
 	              if (end[1] - start[1] >= instance.endDataset - instance.startDataset) {
-	                instance.clickedId = 'ALL';
+	                // instance.clickedId = 'ALL';
 	              } else if (end[1] - start[1] >= instance.timePeriods[_i].multipliers[_j] * instance.timePeriods[_i].interval) {
-	                instance.clickedId = instance.timePeriods[_i].multipliers[_j] + instance.timePeriods[_i].abbreviation.single;
+	                // instance.clickedId = instance.timePeriods[i].multipliers[j] + instance.timePeriods[i].abbreviation.single;
 	              }
 	            }
 	          }
@@ -538,7 +666,27 @@
 	          chart: this.chart,
 	          smartLabel: this.smartLabel,
 	          chartContainer: this.graphics.container
-	        }, self.extData.style['all-config']).attachEventHandlers({
+	        }, self.extData.style['all-config'] || {
+	          // --config--
+	          fill: '#ffffff',
+	          labelFill: '#696969',
+	          symbolStrokeWidth: '2',
+	          stroke: '#ced5d4',
+	          strokeWidth: '1',
+	          hoverFill: '#ced5d4',
+	          height: 22,
+	          radius: 1,
+	          margin: {
+	            right: 5
+	          },
+	          btnTextStyle: {
+	            'fontFamily': '"Lucida Grande", sans-serif',
+	            'fontSize': '13',
+	            'fill': '#696969',
+	            'line-height': '1',
+	            'letter-spacing': '-0.04em'
+	          }
+	        }).attachEventHandlers({
 	          click: function click() {
 	            self.periodButtonClicked = true;
 	            self.clickedId = 'ALL';
@@ -580,7 +728,27 @@
 	                chart: _this.chart,
 	                smartLabel: _this.smartLabel,
 	                chartContainer: _this.graphics.container
-	              }, self.extData.style['calculated-config']).attachEventHandlers({
+	              }, self.extData.style['calculated-config'] || {
+	                // --config--
+	                fill: '#ffffff',
+	                labelFill: '#696969',
+	                symbolStrokeWidth: '2',
+	                stroke: '#ced5d4',
+	                strokeWidth: '1',
+	                hoverFill: '#ced5d4',
+	                height: 22,
+	                radius: 1,
+	                margin: {
+	                  right: 0
+	                },
+	                btnTextStyle: {
+	                  'fontFamily': '"Lucida Grande", sans-serif',
+	                  'fontSize': '13',
+	                  'fill': '#696969',
+	                  'line-height': '1',
+	                  'letter-spacing': '-0.04em'
+	                }
+	              }).attachEventHandlers({
 	                'click': function click() {
 	                  self.periodButtonClicked = true;
 	                  self.clickedId = self.standardCalculatedPeriods[_i2].multipliers[_j2] + self.standardCalculatedPeriods[_i2].abbreviation;
@@ -622,7 +790,47 @@
 	        contextualButtons = [];
 
 	        var _loop2 = function _loop2(_i3) {
-	          contextualConfig = _i3 === 0 ? self.extData.style['contextual-config-first'] : self.extData.style['contextual-config'];
+	          contextualConfig = _i3 === 0 ? self.extData.style['contextual-config-first'] || {
+	            fill: '#ffffff',
+	            labelFill: '#696969',
+	            symbolStrokeWidth: '2',
+	            stroke: '#ced5d4',
+	            strokeWidth: '1',
+	            height: 22,
+	            hoverFill: '#ced5d4',
+	            radius: 1,
+	            margin: {
+	              right: 0,
+	              left: 5
+	            },
+	            btnTextStyle: {
+	              'fontFamily': '"Lucida Grande", sans-serif',
+	              'fontSize': '13',
+	              'fill': '#696969',
+	              'line-height': '1',
+	              'letter-spacing': '-0.04em'
+	            }
+	          } : self.extData.style['contextual-config'] || {
+	            fill: '#ffffff',
+	            labelFill: '#696969',
+	            symbolStrokeWidth: '2',
+	            stroke: '#ced5d4',
+	            strokeWidth: '1',
+	            height: 22,
+	            hoverFill: '#ced5d4',
+	            radius: 1,
+	            margin: {
+	              right: 0,
+	              left: 0
+	            },
+	            btnTextStyle: {
+	              'fontFamily': '"Lucida Grande", sans-serif',
+	              'fontSize': '13',
+	              'fill': '#696969',
+	              'line-height': '1',
+	              'letter-spacing': '-0.04em'
+	            }
+	          };
 	          contextualButtons[_i3] = new _this.toolbox.Symbol(_this.standardContexualPeriods[_i3].abbreviation, true, {
 	            paper: _this.graphics.paper,
 	            chart: _this.chart,
@@ -714,19 +922,19 @@
 	            return 2;
 	          },
 	          layout: function layout(obj) {
-	            return obj[_self.extData.layout];
+	            return obj[_self.extData.layout] || 'inline';
 	          },
 	          orientation: [{
 	            type: function type(obj) {
-	              return obj[_self.extData.orientation];
+	              return obj[_self.extData.orientation] || 'horizontal';
 	            },
 	            position: [{
 	              type: function type(obj) {
-	                return obj[_self.extData.posWrtCanvas];
+	                return obj[_self.extData.posWrtCanvas] || 'top';
 	              },
 	              alignment: [{
 	                type: function type(obj) {
-	                  return obj[_self.extData.alignment];
+	                  return obj[_self.extData.alignment] || 'left';
 	                },
 	                dimensions: [function () {
 	                  var parent = this.getParentComponentGroup();

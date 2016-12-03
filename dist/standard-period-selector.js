@@ -104,6 +104,7 @@
 	      this.noCalcButtons = 0;
 	      this.calculatedButtonObj = {};
 	      this.minimumBucket = 1;
+
 	      this.tdButtons = [
 	        {
 	          'name': 'YTD',
@@ -296,7 +297,7 @@
 	        let len = timeArr[i].possibleFactors.length,
 	          timeName = timeArr[i] && timeArr[i].name,
 	          timeObj = timeArr && timeArr[i],
-	          customMultipliers = self.extData && self.extData.customMultipliers || {};
+	          customMultipliers = self && self.customMultipliers || {};
 	        timeObj.multipliers = [];
 	        if (customMultipliers[timeName]) {
 	          timeObj.multipliers = customMultipliers[timeName];
@@ -407,7 +408,7 @@
 	          instance.globalReactiveModel = globalReactiveModel;
 	          instance.spaceManagerInstance = spaceManagerInstance;
 	          instance.smartLabel = smartLabel;
-	          instance.extData = extData;
+	          instance.extDataUser = extData;
 	          instance.chartInstance = chartInstance;
 	        }
 	      ]);
@@ -421,6 +422,123 @@
 	      instance.timeRules = instance.timeRules.getDataAggregator();
 	      instance.timeRules = instance.timeRules.getAggregationTimeRules();
 	      instance.timePeriods = instance.processMultipliers(instance.timeRules);
+	      instance.extData = {
+	        'default-select': 'ALL',
+	        'posWrtCanvas': 'top',
+	        'layout': 'inline',
+	        'alignment': 'right',
+	        'orientation': 'horizontal',
+	        'customMultipliers': {
+	          'millisecond': [1, 500],
+	          'second': [1, 5, 15, 30],
+	          'minute': [1, 5, 15, 30],
+	          'hour': [1, 3, 6, 12],
+	          'day': [1, 7, 15],
+	          'month': [1, 3, 6],
+	          'year': [1, 3, 5]
+	        },
+	        'style': {
+	          'label-config': {
+	            // --config--
+	            text: {
+	              style: {
+	                'font-family': '"Lucida Grande", sans-serif',
+	                'font-size': '13',
+	                'fill': '#696969',
+	                'font-weight': 'bold'
+	              }
+	            },
+	            container: {
+	              height: 22
+	            }
+	          },
+	          'all-config': {
+	            // --config--
+	            fill: '#ffffff',
+	            labelFill: '#696969',
+	            symbolStrokeWidth: '2',
+	            stroke: '#ced5d4',
+	            strokeWidth: '1',
+	            hoverFill: '#ced5d4',
+	            height: 22,
+	            radius: 1,
+	            margin: {
+	              right: 5
+	            },
+	            btnTextStyle: {
+	              'fontFamily': '"Lucida Grande", sans-serif',
+	              'fontSize': '13',
+	              'fill': '#696969',
+	              'line-height': '1',
+	              'letter-spacing': '-0.04em'
+	            }
+	          },
+	          'calculated-config': {
+	            // --config--
+	            fill: '#ffffff',
+	            labelFill: '#696969',
+	            symbolStrokeWidth: '2',
+	            stroke: '#ced5d4',
+	            strokeWidth: '1',
+	            hoverFill: '#ced5d4',
+	            height: 22,
+	            radius: 1,
+	            margin: {
+	              right: 0
+	            },
+	            btnTextStyle: {
+	              'fontFamily': '"Lucida Grande", sans-serif',
+	              'fontSize': '13',
+	              'fill': '#696969',
+	              'line-height': '1',
+	              'letter-spacing': '-0.04em'
+	            }
+	          },
+	          'contextual-config-first': {
+	            fill: '#ffffff',
+	            labelFill: '#696969',
+	            symbolStrokeWidth: '2',
+	            stroke: '#ced5d4',
+	            strokeWidth: '1',
+	            height: 22,
+	            hoverFill: '#ced5d4',
+	            radius: 1,
+	            margin: {
+	              right: 0,
+	              left: 5
+	            },
+	            btnTextStyle: {
+	              'fontFamily': '"Lucida Grande", sans-serif',
+	              'fontSize': '13',
+	              'fill': '#696969',
+	              'line-height': '1',
+	              'letter-spacing': '-0.04em'
+	            }
+	          },
+	          'contextual-config': {
+	            fill: '#ffffff',
+	            labelFill: '#696969',
+	            symbolStrokeWidth: '2',
+	            stroke: '#ced5d4',
+	            strokeWidth: '1',
+	            height: 22,
+	            hoverFill: '#ced5d4',
+	            radius: 1,
+	            margin: {
+	              right: 0,
+	              left: 0
+	            },
+	            btnTextStyle: {
+	              'fontFamily': '"Lucida Grande", sans-serif',
+	              'fontSize': '13',
+	              'fill': '#696969',
+	              'line-height': '1',
+	              'letter-spacing': '-0.04em'
+	            }
+	          }
+	        }
+	      };
+	      Object.assign(instance.extData, instance.extDataUser);
 	      // instance.minimumBucket = +instance.globalReactiveModel['x-axis-maximum-allowed-ticks'] *
 	      //   +instance.globalReactiveModel['minimum-consecutive-datestamp-diff;'];
 	      // minimum-consecutive-datestamp-diff
@@ -428,6 +546,16 @@
 	      // console.log(instance.globalReactiveModel);
 	      // console.log(instance.globalReactiveModel.model['x-axis-maximum-allowed-ticks']);
 	      // console.log(instance.globalReactiveModel.model['minimum-consecutive-datestamp-diff;']);
+	      instance.customMultipliers = instance.extData.customMultipliers || {
+	        'millisecond': [1, 500],
+	        'second': [1, 5, 15, 30],
+	        'minute': [1, 5, 15, 30],
+	        'hour': [1, 3, 6, 12],
+	        'day': [1, 7, 15],
+	        'month': [1, 3, 6],
+	        'year': [1, 3]
+	      };
+
 	      instance.setActivePeriod(instance.startActiveWindow, instance.endActiveWindow);
 	      instance.toolbars = [];
 	      instance.measurement = {};
@@ -457,9 +585,9 @@
 	        for (let i = 0; i < instance.standardCalculatedPeriods.length; i++) {
 	          for (let j = 0; j < instance.standardCalculatedPeriods[i].multipliers.length; j++) {
 	            if ((end[1] - start[1]) >= (instance.endDataset - instance.startDataset)) {
-	              instance.clickedId = 'ALL';
+	              // instance.clickedId = 'ALL';
 	            } else if ((end[1] - start[1]) >= instance.timePeriods[i].multipliers[j] * instance.timePeriods[i].interval) {
-	              instance.clickedId = instance.timePeriods[i].multipliers[j] + instance.timePeriods[i].abbreviation.single;
+	              // instance.clickedId = instance.timePeriods[i].multipliers[j] + instance.timePeriods[i].abbreviation.single;
 	            }
 	          }
 	        }
@@ -534,7 +662,27 @@
 	        chart: this.chart,
 	        smartLabel: this.smartLabel,
 	        chartContainer: this.graphics.container
-	      }, self.extData.style['all-config']).attachEventHandlers({
+	      }, self.extData.style['all-config'] || {
+	        // --config--
+	        fill: '#ffffff',
+	        labelFill: '#696969',
+	        symbolStrokeWidth: '2',
+	        stroke: '#ced5d4',
+	        strokeWidth: '1',
+	        hoverFill: '#ced5d4',
+	        height: 22,
+	        radius: 1,
+	        margin: {
+	          right: 5
+	        },
+	        btnTextStyle: {
+	          'fontFamily': '"Lucida Grande", sans-serif',
+	          'fontSize': '13',
+	          'fill': '#696969',
+	          'line-height': '1',
+	          'letter-spacing': '-0.04em'
+	        }
+	      }).attachEventHandlers({
 	        click: function () {
 	          self.periodButtonClicked = true;
 	          self.clickedId = 'ALL';
@@ -574,7 +722,27 @@
 	              chart: this.chart,
 	              smartLabel: this.smartLabel,
 	              chartContainer: this.graphics.container
-	            }, self.extData.style['calculated-config']).attachEventHandlers({
+	            }, self.extData.style['calculated-config'] || {
+	              // --config--
+	              fill: '#ffffff',
+	              labelFill: '#696969',
+	              symbolStrokeWidth: '2',
+	              stroke: '#ced5d4',
+	              strokeWidth: '1',
+	              hoverFill: '#ced5d4',
+	              height: 22,
+	              radius: 1,
+	              margin: {
+	                right: 0
+	              },
+	              btnTextStyle: {
+	                'fontFamily': '"Lucida Grande", sans-serif',
+	                'fontSize': '13',
+	                'fill': '#696969',
+	                'line-height': '1',
+	                'letter-spacing': '-0.04em'
+	              }
+	            }).attachEventHandlers({
 	              'click': function () {
 	                self.periodButtonClicked = true;
 	                self.clickedId = self.standardCalculatedPeriods[i].multipliers[j] + self.standardCalculatedPeriods[i].abbreviation;
@@ -608,7 +776,47 @@
 	      contextualButtons = [];
 
 	      for (let i = 0; i < this.standardContexualPeriods.length; i++) {
-	        contextualConfig = (i === 0) ? self.extData.style['contextual-config-first'] : self.extData.style['contextual-config'];
+	        contextualConfig = (i === 0) ? self.extData.style['contextual-config-first'] || {
+	          fill: '#ffffff',
+	          labelFill: '#696969',
+	          symbolStrokeWidth: '2',
+	          stroke: '#ced5d4',
+	          strokeWidth: '1',
+	          height: 22,
+	          hoverFill: '#ced5d4',
+	          radius: 1,
+	          margin: {
+	            right: 0,
+	            left: 5
+	          },
+	          btnTextStyle: {
+	            'fontFamily': '"Lucida Grande", sans-serif',
+	            'fontSize': '13',
+	            'fill': '#696969',
+	            'line-height': '1',
+	            'letter-spacing': '-0.04em'
+	          }
+	        } : self.extData.style['contextual-config'] || {
+	          fill: '#ffffff',
+	          labelFill: '#696969',
+	          symbolStrokeWidth: '2',
+	          stroke: '#ced5d4',
+	          strokeWidth: '1',
+	          height: 22,
+	          hoverFill: '#ced5d4',
+	          radius: 1,
+	          margin: {
+	            right: 0,
+	            left: 0
+	          },
+	          btnTextStyle: {
+	            'fontFamily': '"Lucida Grande", sans-serif',
+	            'fontSize': '13',
+	            'fill': '#696969',
+	            'line-height': '1',
+	            'letter-spacing': '-0.04em'
+	          }
+	        };
 	        contextualButtons[i] = new this.toolbox.Symbol(this.standardContexualPeriods[i].abbreviation, true, {
 	          paper: this.graphics.paper,
 	          chart: this.chart,
@@ -689,19 +897,19 @@
 	          return 2;
 	        },
 	        layout: function (obj) {
-	          return obj[self.extData.layout];
+	          return obj[self.extData.layout] || 'inline';
 	        },
 	        orientation: [{
 	          type: function (obj) {
-	            return obj[self.extData.orientation];
+	            return obj[self.extData.orientation] || 'horizontal';
 	          },
 	          position: [{
 	            type: function (obj) {
-	              return obj[self.extData.posWrtCanvas];
+	              return obj[self.extData.posWrtCanvas] || 'top';
 	            },
 	            alignment: [{
 	              type: function (obj) {
-	                return obj[self.extData.alignment];
+	                return obj[self.extData.alignment] || 'left';
 	              },
 	              dimensions: [function () {
 	                var parent = this.getParentComponentGroup();
