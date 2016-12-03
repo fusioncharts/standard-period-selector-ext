@@ -13,7 +13,7 @@
   <!-- <script src='bower_components/fusioncharts/fusioncharts.timeseries.js' charset='utf-8'></script> -->
   <script src='../xt-edge/out/build/source/fusioncharts.timeseries.js' charset='utf-8'></script>
   <!-- <script src='bower_components/fusioncharts/toolboxext.js' charset='utf-8'></script> -->
-  <script src='dist/standard-period-selector-es5.min.js' charset='utf-8'></script>
+  <script src='dist/standard-period-selector.js' charset='utf-8'></script>
   <div id='chart-container'></div>
   <script type='text/javascript'>
     var tsChart;
@@ -90,7 +90,7 @@
                         datasets: [{
                             category: {
                                 dateformat: "%e-%b-%Y",
-                                data: getRandomDates(200)
+                                data: getRandomDates(1500)
                             },
                             dataset: [
                                 {
@@ -101,14 +101,14 @@
                                                 type: "column"
                                             },
                                             name: "Series 1",
-                                            data: getRandomSeries(200)
+                                            data: getRandomSeries(1500)
                                         },
                                         {
                                             plot: {
                                                 type: "line"
                                             },
-                                            name: "Series 1",
-                                            data: getRandomSeries(200)
+                                            name: "Series 2",
+                                            data: getRandomSeries(1500)
                                         }
                                         // {
                                         //     plot: {
@@ -151,7 +151,8 @@
                         'layout': 'inline',
                         'alignment': 'right',
                         'orientation': 'horizontal',
-                        'customMultiplers': {
+                        'customMultipliers': {
+                          'millisecond': [1, 500],
                           'second': [1, 5, 15, 30],
                           'minute': [1, 5, 15, 30],
                           'hour': [1, 3, 6, 12],

@@ -124,9 +124,10 @@
 	      this.standardContexualPeriods = [];
 	      this.startPointUnit = 0;
 	      this.startPointMultiplier = 0;
-	      this.clickedId = '1M';
+	      this.clickedId = 'ALL';
 	      this.noCalcButtons = 0;
 	      this.calculatedButtonObj = {};
+	      this.minimumBucket = 1;
 	      this.tdButtons = [{
 	        'name': 'YTD',
 	        'abbreviation': 'YTD',
@@ -188,33 +189,34 @@
 	            i = 0,
 	            j = 0,
 	            activeWindow = this.endActiveWindow - this.startActiveWindow,
-	            count = 0;
-	        this.standardCalculatedPeriods = [];
-	        for (i = 0; i < this.timePeriods.length; i++) {
+	            count = 0,
+	            self = this;
+	        self.standardCalculatedPeriods = [];
+	        for (i = 0; i < self.timePeriods.length; i++) {
 	          // checking whether the unit is applicable for the current target block
-	          if (targetBlock / this.timePeriods[i].interval >= 1) {
+	          if (targetBlock / self.timePeriods[i].interval >= 1) {
 	            // checking whether the unit is of the higher order and only multiplier 1 is applicable
-	            if (Math.floor(activeWindow / this.timePeriods[i].interval) < 1) {
-	              this.standardCalculatedPeriods.push({
-	                'abbreviation': this.timePeriods[i].abbreviation.single,
-	                'description': this.timePeriods[i].description,
-	                'milliseconds': this.timePeriods[i].interval,
-	                'name': this.timePeriods[i].name,
+	            if (Math.floor(activeWindow / self.timePeriods[i].interval) < 1) {
+	              self.standardCalculatedPeriods.push({
+	                'abbreviation': self.timePeriods[i].abbreviation.single,
+	                'description': self.timePeriods[i].description,
+	                'milliseconds': self.timePeriods[i].interval,
+	                'name': self.timePeriods[i].name,
 	                'multipliers': [1]
 	              });
 	            } else {
 	              // if the unit is of the order of the target block and calculating the multipliers
-	              this.standardCalculatedPeriods.push({
-	                'abbreviation': this.timePeriods[i].abbreviation.single,
-	                'description': this.timePeriods[i].description,
-	                'milliseconds': this.timePeriods[i].interval,
-	                'name': this.timePeriods[i].name,
+	              self.standardCalculatedPeriods.push({
+	                'abbreviation': self.timePeriods[i].abbreviation.single,
+	                'description': self.timePeriods[i].description,
+	                'milliseconds': self.timePeriods[i].interval,
+	                'name': self.timePeriods[i].name,
 	                'multipliers': []
 	              });
 	              // calculating and populating the applicable multpliers of each unit
-	              for (j = 0; j < this.timePeriods[i].multipliers.length; j++) {
-	                if (activeWindow / this.ratio < this.timePeriods[i].multipliers[j] * this.timePeriods[i].interval) {
-	                  this.standardCalculatedPeriods[this.standardCalculatedPeriods.length - 1].multipliers.push(this.timePeriods[i].multipliers[j]);
+	              for (j = 0; j < self.timePeriods[i].multipliers.length; j++) {
+	                if (activeWindow / self.ratio < self.timePeriods[i].multipliers[j] * self.timePeriods[i].interval && self.timePeriods[i].multipliers[j] * self.timePeriods[i].interval > self.minimumBucket) {
+	                  self.standardCalculatedPeriods[self.standardCalculatedPeriods.length - 1].multipliers.push(self.timePeriods[i].multipliers[j]);
 	                }
 	              }
 	            }
@@ -312,20 +314,24 @@
 	    }, {
 	      key: 'processMultipliers',
 	      value: function processMultipliers(timeArr) {
+	        var self = this;
 	        for (var i = 0; i < timeArr.length; i++) {
-	          var len = timeArr[i].possibleFactors.length;
-	          timeArr[i].multipliers = [];
-	          if (this.extData.calcFactors[timeArr[i].name]) {
-	            timeArr[i].multipliers = this.extData.calcFactors[timeArr[i].name];
+	          var len = timeArr[i].possibleFactors.length,
+	              timeName = timeArr[i] && timeArr[i].name,
+	              timeObj = timeArr && timeArr[i],
+	              customMultipliers = self.extData && self.extData.customMultipliers || {};
+	          timeObj.multipliers = [];
+	          if (customMultipliers[timeName]) {
+	            timeObj.multipliers = customMultipliers[timeName];
 	          } else if (len === 1) {
-	            timeArr[i].multipliers.push(timeArr[i].possibleFactors[0]);
+	            timeObj.multipliers.push(timeObj.possibleFactors[0]);
 	          } else if (len === 2) {
-	            timeArr[i].multipliers.push(timeArr[i].possibleFactors[0]);
-	            timeArr[i].multipliers.push(timeArr[i].possibleFactors[len - 1]);
+	            timeObj.multipliers.push(timeObj.possibleFactors[0]);
+	            timeObj.multipliers.push(timeObj.possibleFactors[len - 1]);
 	          } else {
-	            timeArr[i].multipliers.push(timeArr[i].possibleFactors[0]);
-	            timeArr[i].multipliers.push(Math.floor(timeArr[i].possibleFactors[len - 1] / 2));
-	            timeArr[i].multipliers.push(timeArr[i].possibleFactors[len - 1]);
+	            timeObj.multipliers.push(timeObj.possibleFactors[0]);
+	            timeObj.multipliers.push(Math.floor(timeObj.possibleFactors[len - 1] / 2));
+	            timeObj.multipliers.push(timeObj.possibleFactors[len - 1]);
 	          }
 	        }
 	        return timeArr;
@@ -340,7 +346,7 @@
 
 	    }, {
 	      key: 'setActivePeriod',
-	      value: function setActivePeriod() {
+	      value: function setActivePeriod(a, b) {
 	        var start, end;
 	        if (arguments.length === 1) {
 	          end = this.globalReactiveModel.model['x-axis-visible-range-end'];
@@ -351,9 +357,12 @@
 	        }
 	        this.startActiveWindow = start;
 	        this.endActiveWindow = end;
+	        if (this.periodButtonClicked) {
+	          this.periodButtonClicked = false;
+	          this.globalReactiveModel.model['x-axis-visible-range-start'] = this.startActiveWindow;
+	          this.globalReactiveModel.model['x-axis-visible-range-end'] = this.endActiveWindow;
+	        }
 	        this.generateCalculatedButtons();
-	        this.globalReactiveModel.model['x-axis-visible-range-start'] = this.startActiveWindow;
-	        this.globalReactiveModel.model['x-axis-visible-range-end'] = this.endActiveWindow;
 	        this.generateContextualButtons();
 	      }
 
@@ -381,7 +390,12 @@
 	    }, {
 	      key: 'init',
 	      value: function init(require) {
-	        var instance = this;
+	        var instance = this,
+	            i = 0,
+	            j = 0,
+	            ii = 0,
+	            jj = 0,
+	            standardCalculatedPeriods = instance.standardCalculatedPeriods;
 	        require(['xAxis', 'yAxis', 'graphics', 'chart', 'dataset', 'PlotManager', 'canvasConfig', 'MarkerManager', 'reactiveModel', 'globalReactiveModel', 'spaceManagerInstance', 'smartLabel', 'extData', 'chartInstance', function (xAxis, yAxis, graphics, chart, dataset, plotManager, canvasConfig, markerManager, reactiveModel, globalReactiveModel, spaceManagerInstance, smartLabel, extData, chartInstance) {
 	          instance.xAxis = xAxis;
 	          instance.yAxis = yAxis;
@@ -398,46 +412,71 @@
 	          instance.extData = extData;
 	          instance.chartInstance = chartInstance;
 	        }]);
-	        this.spaceManagerInstance = instance.spaceManagerInstance;
-	        this.globalReactiveModel = instance.globalReactiveModel;
-	        this.endActiveWindow = instance.globalReactiveModel.model['x-axis-visible-range-end'];
-	        this.startActiveWindow = instance.globalReactiveModel.model['x-axis-visible-range-start'];
-	        this.startDataset = instance.globalReactiveModel.model['x-axis-absolute-range-start'];
-	        this.endDataset = instance.globalReactiveModel.model['x-axis-absolute-range-end'];
+	        instance.endActiveWindow = instance.globalReactiveModel.model['x-axis-visible-range-end'];
+	        instance.startActiveWindow = instance.globalReactiveModel.model['x-axis-visible-range-start'];
+	        instance.startDataset = instance.globalReactiveModel.model['x-axis-absolute-range-start'];
+	        instance.endDataset = instance.globalReactiveModel.model['x-axis-absolute-range-end'];
 	        // instance.globalReactiveModel.model['_x-axis-visible-range-start'] += 124416000000;
-	        this.timeRules = this.chartInstance.apiInstance.getComponentStore();
-	        this.timeRules = this.timeRules.getCanvasByIndex(0).composition.impl;
-	        this.timeRules = this.timeRules.getDataAggregator();
-	        this.timeRules = this.timeRules.getAggregationTimeRules();
-	        this.timePeriods = this.processMultipliers(this.timeRules);
-	        console.log(this.timePeriods);
-	        this.setActivePeriod(this.startActiveWindow, this.endActiveWindow);
-	        this.toolbars = [];
-	        this.measurement = {};
-	        this.flag = true;
-	        console.log(this.extData);
-	        this.clickedId = this.extData['default-select'];
-	        this.toolbars.push(this.createToolbar());
+	        instance.timeRules = instance.chartInstance.apiInstance.getComponentStore();
+	        instance.timeRules = instance.timeRules.getCanvasByIndex(0).composition.impl;
+	        instance.timeRules = instance.timeRules.getDataAggregator();
+	        instance.timeRules = instance.timeRules.getAggregationTimeRules();
+	        instance.timePeriods = instance.processMultipliers(instance.timeRules);
+	        // instance.minimumBucket = +instance.globalReactiveModel['x-axis-maximum-allowed-ticks'] *
+	        //   +instance.globalReactiveModel['minimum-consecutive-datestamp-diff;'];
+	        // minimum-consecutive-datestamp-diff
+	        // x-axis-maximum-allowed-ticks
+	        // console.log(instance.globalReactiveModel);
+	        // console.log(instance.globalReactiveModel.model['x-axis-maximum-allowed-ticks']);
+	        // console.log(instance.globalReactiveModel.model['minimum-consecutive-datestamp-diff;']);
+	        instance.setActivePeriod(instance.startActiveWindow, instance.endActiveWindow);
+	        instance.toolbars = [];
+	        instance.measurement = {};
+	        instance.flag = true;
 
-	        this.globalReactiveModel.onPropsChange(['x-axis-visible-range-start', 'x-axis-visible-range-end'], function (start, end) {
-	          if (instance.flag) {
-	            instance.flag = false;
-	            instance.setActivePeriod(start[1], end[1]);
-	            for (var i = 0; i < instance.standardCalculatedPeriods.length; i++) {
-	              for (var j = 0; j < instance.standardCalculatedPeriods[i].multipliers.length; j++) {
-	                if (end[1] - start[1] >= instance.timePeriods[i].multipliers[j] * instance.timePeriods[i].interval) {
-	                  instance.clickedId = instance.timePeriods[i].multipliers[j] + instance.timePeriods[i].abbreviation.single;
-	                }
+	        instance.toolbars.push(instance.createToolbar());
+
+	        instance.globalReactiveModel.onPropsChange(['x-axis-visible-range-start', 'x-axis-visible-range-end'], propsHandler);
+	        function propsHandler(start, end, flag) {
+	          instance.lastDisposed = instance.lastDisposed || 0;
+	          if (flag) {
+	            instance.launchedPropsHandler = false;
+	            start = instance.propsStart;
+	            end = instance.propsEnd;
+	          }
+	          instance.propsStart = start;
+	          instance.propsEnd = end;
+	          if (+new Date() - instance.lastDisposed < 400) {
+	            if (!instance.launchedPropsHandler) {
+	              instance.launchedPropsHandler = true;
+	              setTimeout(propsHandler.bind(null, 0, 0, true));
+	            }
+	            return;
+	          }
+	          instance.lastDisposed = +new Date();
+	          instance.setActivePeriod(start[1], end[1]);
+	          for (var _i = 0; _i < instance.standardCalculatedPeriods.length; _i++) {
+	            for (var _j = 0; _j < instance.standardCalculatedPeriods[_i].multipliers.length; _j++) {
+	              if (end[1] - start[1] >= instance.endDataset - instance.startDataset) {
+	                instance.clickedId = 'ALL';
+	              } else if (end[1] - start[1] >= instance.timePeriods[_i].multipliers[_j] * instance.timePeriods[_i].interval) {
+	                instance.clickedId = instance.timePeriods[_i].multipliers[_j] + instance.timePeriods[_i].abbreviation.single;
 	              }
 	            }
-	            // instance.toolbar.dispose();
-	            // instance.toolbars.pop();
-	            // instance.toolbars.push(instance.createToolbar());
-	            // instance.getLogicalSpace();
-	            // instance.draw();
 	          }
-	        });
-	        return this;
+
+	          if (!instance.cantDispose) {
+	            instance.cantDispose = true;
+	            instance.toolbar.dispose();
+	            instance.toolbars.pop();
+	            instance.toolbars.push(instance.createToolbar());
+	            instance.getLogicalSpace();
+	            instance.draw();
+	          } else {
+	            instance.cantDispose = false;
+	          }
+	        }
+	        return instance;
 	      }
 	    }, {
 	      key: 'createToolbar',
@@ -455,10 +494,9 @@
 	            deductor,
 	            i,
 	            j,
-	            margin,
+	            contextualConfig,
 	            fromDateLabel,
 	            group;
-
 	        group = new this.toolbox.ComponentGroup({
 	          paper: this.graphics.paper,
 	          chart: this.chart,
@@ -493,22 +531,23 @@
 	        fromDateLabel = new this.toolbox.Label('Zoom:', {
 	          smartLabel: this.smartLabel,
 	          paper: this.graphics.paper
-	        }, this.extData.style['label-config']);
+	        }, self.extData.style['label-config']);
 	        group.addSymbol(fromDateLabel);
 	        allButton = new this.toolbox.Symbol('ALL', true, {
 	          paper: this.graphics.paper,
 	          chart: this.chart,
 	          smartLabel: this.smartLabel,
 	          chartContainer: this.graphics.container
-	        }, this.extData.style['all-config']).attachEventHandlers({
+	        }, self.extData.style['all-config']).attachEventHandlers({
 	          click: function click() {
-	            self.setActivePeriod(self.startDataset, self.endDataset);
-	            toolbar.dispose();
+	            self.periodButtonClicked = true;
 	            self.clickedId = 'ALL';
-	            self.toolbars.pop();
-	            self.toolbars.push(self.createToolbar());
-	            self.getLogicalSpace();
-	            self.draw();
+	            self.setActivePeriod(self.startDataset, self.endDataset);
+	            // toolbar.dispose();
+	            // self.toolbars.pop();
+	            // self.toolbars.push(self.createToolbar());
+	            // self.getLogicalSpace();
+	            // self.draw();
 	            // self._ref.reAllocate(self.parentGroup);
 	          },
 	          tooltext: 'ALL'
@@ -526,30 +565,27 @@
 	          this.calculatedButtonObj[key].hide();
 	        }
 
-	        var _loop = function _loop(_i) {
-	          if (_i === self.startPointUnit) {
+	        var _loop = function _loop(_i2) {
+	          if (_i2 === self.startPointUnit) {
 	            startMultiplier = self.startPointMultiplier;
 	          } else {
-	            startMultiplier = self.standardCalculatedPeriods[_i].multipliers.length - 1;
+	            startMultiplier = self.standardCalculatedPeriods[_i2].multipliers.length - 1;
 	          }
 
-	          var _loop3 = function _loop3(_j) {
-	            margin = _i === self.noCalcButtons && _j === 0 ? 5 : 0;
-	            var keyAbb = self.standardCalculatedPeriods[_i].multipliers[_j] + self.standardCalculatedPeriods[_i].abbreviation;
+	          var _loop3 = function _loop3(_j2) {
+	            var keyAbb = self.standardCalculatedPeriods[_i2].multipliers[_j2] + self.standardCalculatedPeriods[_i2].abbreviation;
 	            if (_this.calculatedButtonObj[keyAbb] === undefined) {
 	              calculatedButtons = new _this.toolbox.Symbol(keyAbb, true, {
 	                paper: _this.graphics.paper,
 	                chart: _this.chart,
 	                smartLabel: _this.smartLabel,
 	                chartContainer: _this.graphics.container
-	              }, _this.extData.style['calculated-config']).attachEventHandlers({
+	              }, self.extData.style['calculated-config']).attachEventHandlers({
 	                'click': function click() {
-	                  deductor = self.standardCalculatedPeriods[_i].multipliers[_j] * self.standardCalculatedPeriods[_i].milliseconds;
-	                  self.clickedId = self.standardCalculatedPeriods[_i].multipliers[_j] + self.standardCalculatedPeriods[_i].abbreviation;
+	                  self.periodButtonClicked = true;
+	                  self.clickedId = self.standardCalculatedPeriods[_i2].multipliers[_j2] + self.standardCalculatedPeriods[_i2].abbreviation;
+	                  deductor = self.standardCalculatedPeriods[_i2].multipliers[_j2] * self.standardCalculatedPeriods[_i2].milliseconds;
 	                  self.setActivePeriod(deductor);
-	                  console.log(self.standardCalculatedPeriods);
-	                  self.createToolbar();
-	                  // self.toolbars[self.toolbars.length - 1] = self.createToolbar();
 	                  // toolbar.dispose();
 	                  // self.toolbars.pop();
 	                  // self.toolbars.push(self.createToolbar());
@@ -558,37 +594,45 @@
 	                  // self._ref.reAllocate(self.parentGroup);
 	                  // this.toolbars[this.toolbars.length - 1] = this.createToolbar();
 	                },
-	                tooltext: self.standardCalculatedPeriods[_i].multipliers[_j] + ' ' + self.standardCalculatedPeriods[_i].description
+	                tooltext: self.standardCalculatedPeriods[_i2].multipliers[_j2] + ' ' + self.standardCalculatedPeriods[_i2].description
 	              });
 	              _this.calculatedButtonObj[keyAbb] = calculatedButtons;
 	            }
 	            // unigroup.addSymbol(calculatedButtons[i]);
-	            // this.calculatedButtonObj[keyAbb].show();
+	            _this.calculatedButtonObj[keyAbb].show();
 	            unigroup.addSymbol(_this.calculatedButtonObj[keyAbb]);
 	          };
 
-	          for (var _j = startMultiplier; _j >= 0; _j--) {
-	            _loop3(_j);
+	          for (var _j2 = startMultiplier; _j2 >= 0; _j2--) {
+	            _loop3(_j2);
 	          }
 	        };
 
-	        for (var _i = self.startPointUnit; _i >= 0; _i--) {
-	          _loop(_i);
+	        for (var _i2 = self.startPointUnit; _i2 >= 0; _i2--) {
+	          _loop(_i2);
 	        }
+
+	        // for (let i = self.startPointUnit; i >= 0; i--) {
+	        //   for (let j = startMultiplier; j >= 0; j--) {
+	        //     let keyAbb = self.standardCalculatedPeriods[i].multipliers[j] + self.standardCalculatedPeriods[i].abbreviation;
+	        //     unigroup.addSymbol(this.calculatedButtonObj[keyAbb]);
+	        //   }
+	        // }
 
 	        contextualButtons = [];
 
-	        var _loop2 = function _loop2(_i2) {
-	          margin = _i2 === 0 ? _this.extData.style['contextual-config-first'] : _this.extData.style['contextual-config'];
-	          contextualButtons[_i2] = new _this.toolbox.Symbol(_this.standardContexualPeriods[_i2].abbreviation, true, {
+	        var _loop2 = function _loop2(_i3) {
+	          contextualConfig = _i3 === 0 ? self.extData.style['contextual-config-first'] : self.extData.style['contextual-config'];
+	          contextualButtons[_i3] = new _this.toolbox.Symbol(_this.standardContexualPeriods[_i3].abbreviation, true, {
 	            paper: _this.graphics.paper,
 	            chart: _this.chart,
 	            smartLabel: _this.smartLabel,
 	            chartContainer: _this.graphics.container
-	          }, margin).attachEventHandlers({
+	          }, contextualConfig).attachEventHandlers({
 	            'click': function click() {
-	              self.setActivePeriod(self.standardContexualPeriods[_i2].dateStart, self.standardContexualPeriods[_i2].dateEnd);
-	              self.clickedId = self.standardContexualPeriods[_i2].abbreviation;
+	              self.periodButtonClicked = true;
+	              self.clickedId = self.standardContexualPeriods[_i3].abbreviation;
+	              self.setActivePeriod(self.standardContexualPeriods[_i3].dateStart, self.standardContexualPeriods[_i3].dateEnd);
 	              // toolbar.dispose();
 	              // self.toolbars.pop();
 	              // self.toolbars.push(self.createToolbar());
@@ -596,13 +640,13 @@
 	              // self.draw();
 	              // self._ref.reAllocate(self.parentGroup);
 	            },
-	            tooltext: _this.standardContexualPeriods[_i2].description
+	            tooltext: _this.standardContexualPeriods[_i3].description
 	          });
-	          unigroup.addSymbol(contextualButtons[_i2]);
+	          unigroup.addSymbol(contextualButtons[_i3]);
 	        };
 
-	        for (var _i2 = 0; _i2 < this.standardContexualPeriods.length; _i2++) {
-	          _loop2(_i2);
+	        for (var _i3 = 0; _i3 < this.standardContexualPeriods.length; _i3++) {
+	          _loop2(_i3);
 	        }
 
 	        this.SymbolStore.register('textBoxIcon', function (x, y, rad, w, h, padX, padY) {
@@ -715,6 +759,7 @@
 	            ln,
 	            i,
 	            toolbar,
+	            symbolList,
 	            boundElement,
 	            bBox,
 	            x1,
@@ -739,11 +784,10 @@
 	          }
 	        }
 	        this.saveSelectLine = selectLine;
-	        console.log(toolbars[0].componentGroups[1].symbolList);
-	        for (var _i3 = 0, ii = toolbars[0].componentGroups[1].symbolList; _i3 < ii.length; _i3++) {
-	          if (ii[_i3].symbol === this.clickedId) {
-	            // console.log(ii[i].evt.click());
-	            boundElement = ii[_i3].getBoundElement();
+	        symbolList = toolbars[0].componentGroups[1].symbolList;
+	        for (var _i4 = 0, ii = symbolList.length; _i4 < ii; _i4++) {
+	          if (symbolList[_i4].symbol === this.clickedId) {
+	            boundElement = symbolList[_i4].getBoundElement();
 	            bBox = boundElement.getBBox();
 	            x1 = bBox.x;
 	            x2 = bBox.x2;
@@ -754,6 +798,7 @@
 	            });
 	          }
 	        }
+	        this.minimumBucket = this.globalReactiveModel.model['minimum-consecutive-datestamp-diff'] * this.globalReactiveModel.model['x-axis-maximum-allowed-ticks'];
 	      }
 	    }]);
 

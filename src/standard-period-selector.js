@@ -28,6 +28,7 @@ module.exports = function (dep) {
       this.clickedId = 'ALL';
       this.noCalcButtons = 0;
       this.calculatedButtonObj = {};
+      this.minimumBucket = 1;
       this.tdButtons = [
         {
           'name': 'YTD',
@@ -92,33 +93,35 @@ module.exports = function (dep) {
         i = 0,
         j = 0,
         activeWindow = this.endActiveWindow - this.startActiveWindow,
-        count = 0;
-      this.standardCalculatedPeriods = [];
-      for (i = 0; i < this.timePeriods.length; i++) {
+        count = 0,
+        self = this;
+      self.standardCalculatedPeriods = [];
+      for (i = 0; i < self.timePeriods.length; i++) {
         // checking whether the unit is applicable for the current target block
-        if (targetBlock / this.timePeriods[i].interval >= 1) {
+        if (targetBlock / self.timePeriods[i].interval >= 1) {
           // checking whether the unit is of the higher order and only multiplier 1 is applicable
-          if (Math.floor((activeWindow) / this.timePeriods[i].interval) < 1) {
-            this.standardCalculatedPeriods.push({
-              'abbreviation': this.timePeriods[i].abbreviation.single,
-              'description': this.timePeriods[i].description,
-              'milliseconds': this.timePeriods[i].interval,
-              'name': this.timePeriods[i].name,
+          if (Math.floor((activeWindow) / self.timePeriods[i].interval) < 1) {
+            self.standardCalculatedPeriods.push({
+              'abbreviation': self.timePeriods[i].abbreviation.single,
+              'description': self.timePeriods[i].description,
+              'milliseconds': self.timePeriods[i].interval,
+              'name': self.timePeriods[i].name,
               'multipliers': [1]
             });
           } else { // if the unit is of the order of the target block and calculating the multipliers
-            this.standardCalculatedPeriods.push({
-              'abbreviation': this.timePeriods[i].abbreviation.single,
-              'description': this.timePeriods[i].description,
-              'milliseconds': this.timePeriods[i].interval,
-              'name': this.timePeriods[i].name,
+            self.standardCalculatedPeriods.push({
+              'abbreviation': self.timePeriods[i].abbreviation.single,
+              'description': self.timePeriods[i].description,
+              'milliseconds': self.timePeriods[i].interval,
+              'name': self.timePeriods[i].name,
               'multipliers': []
             });
             // calculating and populating the applicable multpliers of each unit
-            for (j = 0; j < this.timePeriods[i].multipliers.length; j++) {
-              if (activeWindow / this.ratio < this.timePeriods[i].multipliers[j] * this.timePeriods[i].interval) {
-                this.standardCalculatedPeriods[this.standardCalculatedPeriods.length - 1].multipliers.push(
-                  this.timePeriods[i].multipliers[j]
+            for (j = 0; j < self.timePeriods[i].multipliers.length; j++) {
+              if (activeWindow / self.ratio < self.timePeriods[i].multipliers[j] * self.timePeriods[i].interval &&
+                (self.timePeriods[i].multipliers[j] * self.timePeriods[i].interval) > self.minimumBucket) {
+                self.standardCalculatedPeriods[self.standardCalculatedPeriods.length - 1].multipliers.push(
+                  self.timePeriods[i].multipliers[j]
                   );
               }
             }
@@ -215,19 +218,22 @@ module.exports = function (dep) {
     processMultipliers (timeArr) {
       var self = this;
       for (let i = 0; i < timeArr.length; i++) {
-        let len = timeArr[i].possibleFactors.length;
-        timeArr[i].multipliers = [];
-        if (self.extData.customMultiplers[timeArr[i].name]) {
-          timeArr[i].multipliers = self.extData.customMultiplers[timeArr[i].name];
+        let len = timeArr[i].possibleFactors.length,
+          timeName = timeArr[i] && timeArr[i].name,
+          timeObj = timeArr && timeArr[i],
+          customMultipliers = self.extData && self.extData.customMultipliers || {};
+        timeObj.multipliers = [];
+        if (customMultipliers[timeName]) {
+          timeObj.multipliers = customMultipliers[timeName];
         } else if (len === 1) {
-          timeArr[i].multipliers.push(timeArr[i].possibleFactors[0]);
+          timeObj.multipliers.push(timeObj.possibleFactors[0]);
         } else if (len === 2) {
-          timeArr[i].multipliers.push(timeArr[i].possibleFactors[0]);
-          timeArr[i].multipliers.push(timeArr[i].possibleFactors[len - 1]);
+          timeObj.multipliers.push(timeObj.possibleFactors[0]);
+          timeObj.multipliers.push(timeObj.possibleFactors[len - 1]);
         } else {
-          timeArr[i].multipliers.push(timeArr[i].possibleFactors[0]);
-          timeArr[i].multipliers.push(Math.floor(timeArr[i].possibleFactors[len - 1] / 2));
-          timeArr[i].multipliers.push(timeArr[i].possibleFactors[len - 1]);
+          timeObj.multipliers.push(timeObj.possibleFactors[0]);
+          timeObj.multipliers.push(Math.floor(timeObj.possibleFactors[len - 1] / 2));
+          timeObj.multipliers.push(timeObj.possibleFactors[len - 1]);
         }
       }
       return timeArr;
@@ -239,7 +245,7 @@ module.exports = function (dep) {
      * @param  {number} date stamp - A UNIX timestamp to be set as the start point of active period
      * @param  {number} date stamp - A UNIX timestamp to be set as the end point of active period
      */
-    setActivePeriod () {
+    setActivePeriod (a, b) {
       var start,
         end;
       if (arguments.length === 1) {
@@ -251,9 +257,12 @@ module.exports = function (dep) {
       }
       this.startActiveWindow = start;
       this.endActiveWindow = end;
+      if (this.periodButtonClicked) {
+        this.periodButtonClicked = false;
+        this.globalReactiveModel.model['x-axis-visible-range-start'] = this.startActiveWindow;
+        this.globalReactiveModel.model['x-axis-visible-range-end'] = this.endActiveWindow;
+      }
       this.generateCalculatedButtons();
-      this.globalReactiveModel.model['x-axis-visible-range-start'] = this.startActiveWindow;
-      this.globalReactiveModel.model['x-axis-visible-range-end'] = this.endActiveWindow;
       this.generateContextualButtons();
     }
 
@@ -275,7 +284,12 @@ module.exports = function (dep) {
      * Fusioncharts life cycle method for extension
      */
     init (require) {
-      var instance = this;
+      var instance = this,
+        i = 0,
+        j = 0,
+        ii = 0,
+        jj = 0,
+        standardCalculatedPeriods = instance.standardCalculatedPeriods;
       require([
         'xAxis',
         'yAxis',
@@ -322,45 +336,71 @@ module.exports = function (dep) {
           instance.chartInstance = chartInstance;
         }
       ]);
-      this.spaceManagerInstance = instance.spaceManagerInstance;
-      this.globalReactiveModel = instance.globalReactiveModel;
-      this.endActiveWindow = instance.globalReactiveModel.model['x-axis-visible-range-end'];
-      this.startActiveWindow = instance.globalReactiveModel.model['x-axis-visible-range-start'];
-      this.startDataset = instance.globalReactiveModel.model['x-axis-absolute-range-start'];
-      this.endDataset = instance.globalReactiveModel.model['x-axis-absolute-range-end'];
+      instance.endActiveWindow = instance.globalReactiveModel.model['x-axis-visible-range-end'];
+      instance.startActiveWindow = instance.globalReactiveModel.model['x-axis-visible-range-start'];
+      instance.startDataset = instance.globalReactiveModel.model['x-axis-absolute-range-start'];
+      instance.endDataset = instance.globalReactiveModel.model['x-axis-absolute-range-end'];
       // instance.globalReactiveModel.model['_x-axis-visible-range-start'] += 124416000000;
-      this.timeRules = this.chartInstance.apiInstance.getComponentStore();
-      this.timeRules = this.timeRules.getCanvasByIndex(0).composition.impl;
-      this.timeRules = this.timeRules.getDataAggregator();
-      this.timeRules = this.timeRules.getAggregationTimeRules();
-      this.timePeriods = this.processMultipliers(this.timeRules);
-      this.setActivePeriod(this.startActiveWindow, this.endActiveWindow);
-      this.toolbars = [];
-      this.measurement = {};
-      this.flag = true;
+      instance.timeRules = instance.chartInstance.apiInstance.getComponentStore();
+      instance.timeRules = instance.timeRules.getCanvasByIndex(0).composition.impl;
+      instance.timeRules = instance.timeRules.getDataAggregator();
+      instance.timeRules = instance.timeRules.getAggregationTimeRules();
+      instance.timePeriods = instance.processMultipliers(instance.timeRules);
+      // instance.minimumBucket = +instance.globalReactiveModel['x-axis-maximum-allowed-ticks'] *
+      //   +instance.globalReactiveModel['minimum-consecutive-datestamp-diff;'];
+      // minimum-consecutive-datestamp-diff
+      // x-axis-maximum-allowed-ticks
+      // console.log(instance.globalReactiveModel);
+      // console.log(instance.globalReactiveModel.model['x-axis-maximum-allowed-ticks']);
+      // console.log(instance.globalReactiveModel.model['minimum-consecutive-datestamp-diff;']);
+      instance.setActivePeriod(instance.startActiveWindow, instance.endActiveWindow);
+      instance.toolbars = [];
+      instance.measurement = {};
+      instance.flag = true;
 
-      this.toolbars.push(this.createToolbar());
+      instance.toolbars.push(instance.createToolbar());
 
-      this.globalReactiveModel.onPropsChange(['x-axis-visible-range-start', 'x-axis-visible-range-end'],
-        function (start, end) {
-          if (instance.flag) {
-            instance.flag = false;
-            instance.setActivePeriod(start[1], end[1]);
-            for (let i = 0; i < instance.standardCalculatedPeriods.length; i++) {
-              for (let j = 0; j < instance.standardCalculatedPeriods[i].multipliers.length; j++) {
-                if ((end[1] - start[1]) >= instance.timePeriods[i].multipliers[j] * instance.timePeriods[i].interval) {
-                  // instance.clickedId = instance.timePeriods[i].multipliers[j] + instance.timePeriods[i].abbreviation.single;
-                }
-              }
-            }
-            instance.toolbar.dispose();
-            instance.toolbars.pop();
-            instance.toolbars.push(instance.createToolbar());
-            instance.getLogicalSpace();
-            instance.draw();
+      instance.globalReactiveModel.onPropsChange(['x-axis-visible-range-start', 'x-axis-visible-range-end'], propsHandler);
+      function propsHandler (start, end, flag) {
+        instance.lastDisposed = instance.lastDisposed || 0;
+        if (flag) {
+          instance.launchedPropsHandler = false;
+          start = instance.propsStart;
+          end = instance.propsEnd;
+        }
+        instance.propsStart = start;
+        instance.propsEnd = end;
+        if (+new Date() - instance.lastDisposed < 400) {
+          if (!instance.launchedPropsHandler) {
+            instance.launchedPropsHandler = true;
+            setTimeout(propsHandler.bind(null, 0, 0, true));
           }
-        });
-      return this;
+          return;
+        }
+        instance.lastDisposed = +new Date();
+        instance.setActivePeriod(start[1], end[1]);
+        for (let i = 0; i < instance.standardCalculatedPeriods.length; i++) {
+          for (let j = 0; j < instance.standardCalculatedPeriods[i].multipliers.length; j++) {
+            if ((end[1] - start[1]) >= (instance.endDataset - instance.startDataset)) {
+              instance.clickedId = 'ALL';
+            } else if ((end[1] - start[1]) >= instance.timePeriods[i].multipliers[j] * instance.timePeriods[i].interval) {
+              instance.clickedId = instance.timePeriods[i].multipliers[j] + instance.timePeriods[i].abbreviation.single;
+            }
+          }
+        }
+
+        if (!instance.cantDispose) {
+          instance.cantDispose = true;
+          instance.toolbar.dispose();
+          instance.toolbars.pop();
+          instance.toolbars.push(instance.createToolbar());
+          instance.getLogicalSpace();
+          instance.draw();
+        } else {
+          instance.cantDispose = false;
+        }
+      }
+      return instance;
     };
 
     createToolbar () {
@@ -378,7 +418,6 @@ module.exports = function (dep) {
         contextualConfig,
         fromDateLabel,
         group;
-
       group = new this.toolbox.ComponentGroup({
         paper: this.graphics.paper,
         chart: this.chart,
@@ -422,9 +461,10 @@ module.exports = function (dep) {
         chartContainer: this.graphics.container
       }, self.extData.style['all-config']).attachEventHandlers({
         click: function () {
-          self.setActivePeriod(self.startDataset, self.endDataset);
-          toolbar.dispose();
+          self.periodButtonClicked = true;
           self.clickedId = 'ALL';
+          self.setActivePeriod(self.startDataset, self.endDataset);
+          // toolbar.dispose();
           // self.toolbars.pop();
           // self.toolbars.push(self.createToolbar());
           // self.getLogicalSpace();
@@ -461,8 +501,9 @@ module.exports = function (dep) {
               chartContainer: this.graphics.container
             }, self.extData.style['calculated-config']).attachEventHandlers({
               'click': function () {
-                deductor = (self.standardCalculatedPeriods[i].multipliers[j] * self.standardCalculatedPeriods[i].milliseconds);
+                self.periodButtonClicked = true;
                 self.clickedId = self.standardCalculatedPeriods[i].multipliers[j] + self.standardCalculatedPeriods[i].abbreviation;
+                deductor = (self.standardCalculatedPeriods[i].multipliers[j] * self.standardCalculatedPeriods[i].milliseconds);
                 self.setActivePeriod(deductor);
                 // toolbar.dispose();
                 // self.toolbars.pop();
@@ -500,8 +541,9 @@ module.exports = function (dep) {
           chartContainer: this.graphics.container
         }, contextualConfig).attachEventHandlers({
           'click': function () {
-            self.setActivePeriod(self.standardContexualPeriods[i].dateStart, self.standardContexualPeriods[i].dateEnd);
+            self.periodButtonClicked = true;
             self.clickedId = self.standardContexualPeriods[i].abbreviation;
+            self.setActivePeriod(self.standardContexualPeriods[i].dateStart, self.standardContexualPeriods[i].dateEnd);
             // toolbar.dispose();
             // self.toolbars.pop();
             // self.toolbars.push(self.createToolbar());
@@ -615,6 +657,7 @@ module.exports = function (dep) {
         ln,
         i,
         toolbar,
+        symbolList,
         boundElement,
         bBox,
         x1,
@@ -639,9 +682,10 @@ module.exports = function (dep) {
         }
       }
       this.saveSelectLine = selectLine;
-      for (let i = 0, ii = toolbars[0].componentGroups[1].symbolList; i < ii.length; i++) {
-        if (ii[i].symbol === this.clickedId) {
-          boundElement = ii[i].getBoundElement();
+      symbolList = toolbars[0].componentGroups[1].symbolList;
+      for (let i = 0, ii = symbolList.length; i < ii; i++) {
+        if (symbolList[i].symbol === this.clickedId) {
+          boundElement = symbolList[i].getBoundElement();
           bBox = boundElement.getBBox();
           x1 = bBox.x;
           x2 = bBox.x2;
@@ -652,6 +696,7 @@ module.exports = function (dep) {
           });
         }
       }
+      this.minimumBucket = this.globalReactiveModel.model['minimum-consecutive-datestamp-diff'] * this.globalReactiveModel.model['x-axis-maximum-allowed-ticks'];
     };
   }
   return StandardPeriodSelector;
