@@ -13,7 +13,7 @@
   <!-- <script src='bower_components/fusioncharts/fusioncharts.timeseries.js' charset='utf-8'></script> -->
   <script src='../xt-edge/out/build/source/fusioncharts.timeseries.js' charset='utf-8'></script>
   <!-- <script src='bower_components/fusioncharts/toolboxext.js' charset='utf-8'></script> -->
-  <script src='dist/standard-period-selector-es5.js' charset='utf-8'></script>
+  <script src='dist/standard-period-selector.js' charset='utf-8'></script>
   <div id='chart-container'></div>
   <script type='text/javascript'>
     var tsChart;
@@ -146,7 +146,8 @@
                     },
                     extensions: {
                       'standard-period-selector': {
-                        'default-select': '1Y',
+                        'disabled': 'false',
+                        'default-select': 'ALL',
                         'posWrtCanvas': 'top',
                         'layout': 'inline',
                         'alignment': 'left',
@@ -167,8 +168,7 @@
                               style: {
                                 'font-family': '"Lucida Grande", sans-serif',
                                 'font-size': '13',
-                                'fill': '#696969',
-                                'font-weight': 'bold'
+                                'fill': '#4b4b4b'
                               }
                             },
                             container: {
@@ -178,11 +178,11 @@
                           'all-config': {
                             // --config--
                             fill: '#ffffff',
-                            labelFill: '#696969',
+                            labelFill: '#4b4b4b',
                             symbolStrokeWidth: '2',
                             stroke: '#ced5d4',
                             strokeWidth: '1',
-                            hoverFill: '#ced5d4',
+                            hoverFill: '#f7f7f7',
                             height: 22,
                             radius: 1,
                             margin: {
@@ -191,7 +191,7 @@
                             btnTextStyle: {
                               'fontFamily': '"Lucida Grande", sans-serif',
                               'fontSize': '13',
-                              'fill': '#696969',
+                              'fill': '#4b4b4b',
                               'line-height': '1',
                               'letter-spacing': '-0.04em'
                             }
@@ -199,11 +199,11 @@
                           'calculated-config': {
                             // --config--
                             fill: '#ffffff',
-                            labelFill: '#696969',
+                            labelFill: '#4b4b4b',
                             symbolStrokeWidth: '2',
                             stroke: '#ced5d4',
                             strokeWidth: '1',
-                            hoverFill: '#ced5d4',
+                            hoverFill: '#f7f7f7',
                             height: 22,
                             radius: 1,
                             margin: {
@@ -212,19 +212,19 @@
                             btnTextStyle: {
                               'fontFamily': '"Lucida Grande", sans-serif',
                               'fontSize': '13',
-                              'fill': '#696969',
+                              'fill': '#4b4b4b',
                               'line-height': '1',
                               'letter-spacing': '-0.04em'
                             }
                           },
                           'contextual-config-first': {
                             fill: '#ffffff',
-                            labelFill: '#696969',
+                            labelFill: '#4b4b4b',
                             symbolStrokeWidth: '2',
                             stroke: '#ced5d4',
                             strokeWidth: '1',
                             height: 22,
-                            hoverFill: '#ced5d4',
+                            hoverFill: '#f7f7f7',
                             radius: 1,
                             margin: {
                               right: 0,
@@ -240,12 +240,12 @@
                           },
                           'contextual-config': {
                             fill: '#ffffff',
-                            labelFill: '#696969',
+                            labelFill: '#4b4b4b',
                             symbolStrokeWidth: '2',
                             stroke: '#ced5d4',
                             strokeWidth: '1',
                             height: 22,
-                            hoverFill: '#ced5d4',
+                            hoverFill: '#f7f7f7',
                             radius: 1,
                             margin: {
                               right: 0,
@@ -254,7 +254,7 @@
                             btnTextStyle: {
                               'fontFamily': '"Lucida Grande", sans-serif',
                               'fontSize': '13',
-                              'fill': '#696969',
+                              'fill': '#4b4b4b',
                               'line-height': '1',
                               'letter-spacing': '-0.04em'
                             }

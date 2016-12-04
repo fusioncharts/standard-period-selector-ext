@@ -1,8 +1,6 @@
 'use strict';
 const StandardPeriodSelector = require('./standard-period-selector');
 
-window.stPS = new StandardPeriodSelector();
-
 ;(function (env, factory) {
   if (typeof module === 'object' && module.exports) {
     module.exports = env.document

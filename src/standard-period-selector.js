@@ -333,6 +333,7 @@ module.exports = function (dep) {
       instance.timeRules = instance.timeRules.getAggregationTimeRules();
       instance.timePeriods = instance.processMultipliers(instance.timeRules);
       instance.extData = {
+        'disabled': 'false',
         'default-select': 'ALL',
         'posWrtCanvas': 'top',
         'layout': 'inline',
@@ -354,8 +355,7 @@ module.exports = function (dep) {
               style: {
                 'font-family': '"Lucida Grande", sans-serif',
                 'font-size': '13',
-                'fill': '#696969',
-                'font-weight': 'bold'
+                'fill': '#4b4b4b'
               }
             },
             container: {
@@ -365,11 +365,11 @@ module.exports = function (dep) {
           'all-config': {
             // --config--
             fill: '#ffffff',
-            labelFill: '#696969',
+            labelFill: '#4b4b4b',
             symbolStrokeWidth: '2',
             stroke: '#ced5d4',
             strokeWidth: '1',
-            hoverFill: '#ced5d4',
+            hoverFill: '#f7f7f7',
             height: 22,
             radius: 1,
             margin: {
@@ -378,7 +378,7 @@ module.exports = function (dep) {
             btnTextStyle: {
               'fontFamily': '"Lucida Grande", sans-serif',
               'fontSize': '13',
-              'fill': '#696969',
+              'fill': '#4b4b4b',
               'line-height': '1',
               'letter-spacing': '-0.04em'
             }
@@ -386,11 +386,11 @@ module.exports = function (dep) {
           'calculated-config': {
             // --config--
             fill: '#ffffff',
-            labelFill: '#696969',
+            labelFill: '#4b4b4b',
             symbolStrokeWidth: '2',
             stroke: '#ced5d4',
             strokeWidth: '1',
-            hoverFill: '#ced5d4',
+            hoverFill: '#f7f7f7',
             height: 22,
             radius: 1,
             margin: {
@@ -399,19 +399,19 @@ module.exports = function (dep) {
             btnTextStyle: {
               'fontFamily': '"Lucida Grande", sans-serif',
               'fontSize': '13',
-              'fill': '#696969',
+              'fill': '#4b4b4b',
               'line-height': '1',
               'letter-spacing': '-0.04em'
             }
           },
           'contextual-config-first': {
             fill: '#ffffff',
-            labelFill: '#696969',
+            labelFill: '#4b4b4b',
             symbolStrokeWidth: '2',
             stroke: '#ced5d4',
             strokeWidth: '1',
             height: 22,
-            hoverFill: '#ced5d4',
+            hoverFill: '#f7f7f7',
             radius: 1,
             margin: {
               right: 0,
@@ -427,12 +427,12 @@ module.exports = function (dep) {
           },
           'contextual-config': {
             fill: '#ffffff',
-            labelFill: '#696969',
+            labelFill: '#4b4b4b',
             symbolStrokeWidth: '2',
             stroke: '#ced5d4',
             strokeWidth: '1',
             height: 22,
-            hoverFill: '#ced5d4',
+            hoverFill: '#f7f7f7',
             radius: 1,
             margin: {
               right: 0,
@@ -441,7 +441,7 @@ module.exports = function (dep) {
             btnTextStyle: {
               'fontFamily': '"Lucida Grande", sans-serif',
               'fontSize': '13',
-              'fill': '#696969',
+              'fill': '#4b4b4b',
               'line-height': '1',
               'letter-spacing': '-0.04em'
             }
@@ -458,7 +458,7 @@ module.exports = function (dep) {
         'month': [1, 3, 6],
         'year': [1, 3]
       };
-
+      instance.clickedId = instance.extData['default-select'] || 'ALL';
       instance.setActivePeriod(instance.startActiveWindow, instance.endActiveWindow);
       instance.toolbars = [];
       instance.measurement = {};
@@ -527,7 +527,6 @@ module.exports = function (dep) {
         allButton,
         self = this,
         deductorAr = [],
-        startMultiplier,
         deductor,
         i,
         j,
