@@ -195,7 +195,7 @@
 	            }, self._babTimer);
 	          }
 	        } else {
-	          self._babTimer = 300;
+	          self._babTimer = 200;
 	          self.onActiveRangeChange();
 	        }
 	      };
@@ -316,6 +316,8 @@
 	      key: 'onActiveRangeChange',
 	      value: function onActiveRangeChange() {
 	        var self = this,
+	            x,
+	            found,
 	            categoryClicked = self.categoryClicked,
 	            clickedId = self.clickedId,
 	            startDataset = self.startDataset,
@@ -342,6 +344,30 @@
 	          if (lastClickedBtnObj && !(endActiveWindow - startActiveWindow === lastClickedBtnObj.interval)) {
 	            delete self.clickedId;
 	            delete self.categoryClicked;
+	          }
+	        } else {
+	          // nothing is selected
+	          if (startDataset === startActiveWindow && endDataset === endActiveWindow) {
+	            self.clickedId = 'ALL';
+	            self.categoryClicked = 'ALL';
+	          } else {
+	            for (x in contextualObj) {
+	              lastClickedBtnObj = contextualObj[x];
+	              if (startActiveWindow === lastClickedBtnObj.contextStart && endActiveWindow === lastClickedBtnObj.contextEnd) {
+	                self.clickedId = x;
+	                self.categoryClicked = 'contextual';
+	                found = true;
+	              }
+	            }
+	            if (!found) {
+	              for (x in calculatedObj) {
+	                lastClickedBtnObj = calculatedObj[x];
+	                if (endActiveWindow - startActiveWindow === lastClickedBtnObj.interval) {
+	                  self.clickedId = x;
+	                  self.categoryClicked = 'calculated';
+	                }
+	              }
+	            }
 	          }
 	        }
 
@@ -397,6 +423,7 @@
 	              fn: function fn() {
 	                self.clickedId = keyName;
 	                self.categoryClicked = 'calculated';
+	                self.heighlightActiveRange();
 	                self.globalReactiveModel.model['x-axis-visible-range-start'] = self.endActiveWindow - interval;
 	              },
 	              shortKey: keyAbb
@@ -555,6 +582,7 @@
 	            fn: function fn() {
 	              self.categoryClicked = 'contextual';
 	              self.clickedId = self.standardContexualPeriods[i].abbreviation;
+	              self.heighlightActiveRange();
 	              self.globalReactiveModel.lock().prop('x-axis-visible-range-start', self.standardContexualPeriods[i].dateStart).prop('x-axis-visible-range-end', self.standardContexualPeriods[i].dateEnd).unlock();
 	            }
 	          };
@@ -638,6 +666,7 @@
 	        allButton = { fn: function fn() {
 	            self.clickedId = 'ALL';
 	            self.categoryClicked = 'ALL';
+	            self.heighlightActiveRange();
 	            self.globalReactiveModel.lock().prop('x-axis-visible-range-start', self.startDataset).prop('x-axis-visible-range-end', self.endDataset).unlock();
 	          } };
 	        allButton.btn = new this.toolbox.Symbol('ALL', true, {

@@ -178,7 +178,7 @@
 	            }, self._babTimer);
 	          }
 	        } else {
-	          self._babTimer = 300;
+	          self._babTimer = 200;
 	          self.onActiveRangeChange();
 	        }
 	      };
@@ -296,6 +296,8 @@
 
 	    onActiveRangeChange () {
 	      var self = this,
+	        x,
+	        found,
 	        categoryClicked = self.categoryClicked,
 	        clickedId = self.clickedId,
 	        startDataset = self.startDataset,
@@ -323,6 +325,30 @@
 	        if (lastClickedBtnObj && !((endActiveWindow - startActiveWindow) === lastClickedBtnObj.interval)) {
 	          delete self.clickedId;
 	          delete self.categoryClicked;
+	        }
+	      } else { // nothing is selected
+	        if (startDataset === startActiveWindow && endDataset === endActiveWindow) {
+	          self.clickedId = 'ALL';
+	          self.categoryClicked = 'ALL';
+	        } else {
+	          for (x in contextualObj) {
+	            lastClickedBtnObj = contextualObj[x];
+	            if (startActiveWindow === lastClickedBtnObj.contextStart &&
+	              endActiveWindow === lastClickedBtnObj.contextEnd) {
+	              self.clickedId = x;
+	              self.categoryClicked = 'contextual';
+	              found = true;
+	            }
+	          }
+	          if (!found) {
+	            for (x in calculatedObj) {
+	              lastClickedBtnObj = calculatedObj[x];
+	              if ((endActiveWindow - startActiveWindow) === lastClickedBtnObj.interval) {
+	                self.clickedId = x;
+	                self.categoryClicked = 'calculated';
+	              }
+	            }
+	          }
 	        }
 	      }
 
@@ -372,6 +398,7 @@
 	            fn: function () {
 	              self.clickedId = keyName;
 	              self.categoryClicked = 'calculated';
+	              self.heighlightActiveRange();
 	              self.globalReactiveModel.model['x-axis-visible-range-start'] = self.endActiveWindow - interval;
 	            },
 	            shortKey: keyAbb
@@ -519,6 +546,7 @@
 	          fn: function () {
 	            self.categoryClicked = 'contextual';
 	            self.clickedId = self.standardContexualPeriods[i].abbreviation;
+	            self.heighlightActiveRange();
 	            self.globalReactiveModel
 	              .lock()
 	              .prop('x-axis-visible-range-start', self.standardContexualPeriods[i].dateStart)
@@ -600,6 +628,7 @@
 	      allButton = {fn: function () {
 	        self.clickedId = 'ALL';
 	        self.categoryClicked = 'ALL';
+	        self.heighlightActiveRange();
 	        self.globalReactiveModel
 	          .lock()
 	          .prop('x-axis-visible-range-start', self.startDataset)
