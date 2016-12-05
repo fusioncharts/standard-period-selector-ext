@@ -28,7 +28,7 @@ module.exports = function (dep) {
       this.clickedId = 'ALL';
       this.noCalcButtons = 0;
       this.calculatedButtonObj = {};
-      this.minimumBucket = 1;
+      this.minimumBucket = 25920000000;
 
       this.tdButtons = [
         {
