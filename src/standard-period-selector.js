@@ -26,7 +26,6 @@ module.exports = function (dep) {
       self.standardContexualPeriods = [];
       self.startPointUnit = 0;
       self.startPointMultiplier = 0;
-      self.clickedId = 'ALL';
       self.noCalcButtons = 0;
       self.minimumBucket = 5184000000;
       self.toolbar = {};
@@ -595,7 +594,12 @@ module.exports = function (dep) {
      * Fusioncharts life cycle method for extension
      */
     init (require) {
-      var instance = this;
+      var instance = this,
+        calculatedObj = instance.btns.calculatedObj,
+        contextualObj = instance.btns.contextualObj,
+        keySelect,
+        key,
+        notFound;
       require([
         'graphics',
         'chart',
@@ -641,7 +645,7 @@ module.exports = function (dep) {
       instance.timePeriods = instance.processMultipliers(instance.timeRules);
       instance.extData = {
         'disabled': 'false',
-        'default-select': 'ALL',
+        // 'default-select': 'ALL',
         'posWrtCanvas': 'top',
         'layout': 'inline',
         'alignment': 'left',
@@ -765,7 +769,23 @@ module.exports = function (dep) {
         'month': [1, 3, 6],
         'year': [1, 3]
       };
-      instance.clickedId = instance.extData['default-select'] || 'ALL';
+      keySelect = instance.extData['default-select'];
+      if (keySelect) {
+        if (keySelect === 'ALL') {
+          instance.clickedId = 'ALL';
+        } else if (contextualObj[keySelect]) {
+          instance.clickedId = keySelect;
+        } else {
+          notFound = true;
+          for (key in calculatedObj) {
+            if (notFound && calculatedObj[key].shortKey === keySelect) {
+              instance.clickedId = calculatedObj[key].shortKey;
+              notFound = false;
+            }
+          }
+        }
+      }
+
       // instance.setActivePeriod(instance.startActiveWindow, instance.endActiveWindow);
       instance.toolbars = [];
       instance.measurement = {};
@@ -865,7 +885,6 @@ module.exports = function (dep) {
         ln,
         i,
         toolbar,
-        selectLine,
         contextualObj = self.btns.contextualObj,
         calculatedObj = self.btns.calculatedObj,
         clickedId = self.clickedId,
@@ -882,17 +901,19 @@ module.exports = function (dep) {
         }
       }
 
-      activeBtn = contextualObj[clickedId] || self.btns[clickedId];
-      if (!activeBtn) {
-        for (i in calculatedObj) {
-          if (calculatedObj[i].shortKey === clickedId) {
-            activeBtn = calculatedObj[i];
-          }
+      if (clickedId) {
+        activeBtn = calculatedObj[clickedId] || contextualObj[clickedId] || self.btns[clickedId];
+        if (activeBtn) {
+          activeBtn.fn && activeBtn.fn();
+        } else {
+          self.onActiveRangeChange();
         }
+      } else {
+        self.onActiveRangeChange();
       }
-      this.saveSelectLine = selectLine;
-      this.minimumBucket = this.globalReactiveModel.model['minimum-consecutive-datestamp-diff'] * this.globalReactiveModel.model['x-axis-maximum-allowed-ticks'];
-      activeBtn && activeBtn.fn && activeBtn.fn();
+
+      this.minimumBucket = this.globalReactiveModel.model['minimum-consecutive-datestamp-diff'] *
+        this.globalReactiveModel.model['x-axis-maximum-allowed-ticks'];
     };
   }
   return StandardPeriodSelector;
