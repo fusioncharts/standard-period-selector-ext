@@ -127,6 +127,7 @@
 	      self.noCalcButtons = 0;
 	      self.minimumBucket = 5184000000;
 	      self.toolbar = {};
+	      self.categoryClicked;
 	      self.btns = {
 	        contextualObj: {},
 	        calculatedObj: {}
@@ -179,17 +180,23 @@
 	        tertiaryTimePeriods: {}
 	      };
 
+	      self._babTimer = 0;
+
 	      self.propsChangeListener = function (start, end) {
 	        self.startActiveWindow = start[1];
 	        self.endActiveWindow = end[1];
 
-	        if (!self.updatePending) {
-	          self.updatePending = true;
-	          setTimeout(function () {
-	            self.updatePending = false;
-	            self.showApplicableCalculatedButtons();
-	            self.heighlightActiveRange();
-	          }, 300);
+	        if (self._babTimer) {
+	          if (!self.updatePending) {
+	            self.updatePending = true;
+	            setTimeout(function () {
+	              self.updatePending = false;
+	              self.onActiveRangeChange();
+	            }, self._babTimer);
+	          }
+	        } else {
+	          self._babTimer = 300;
+	          self.onActiveRangeChange();
 	        }
 	      };
 	    }
@@ -305,6 +312,42 @@
 	          selectLine.hide();
 	        }
 	      }
+	    }, {
+	      key: 'onActiveRangeChange',
+	      value: function onActiveRangeChange() {
+	        var self = this,
+	            categoryClicked = self.categoryClicked,
+	            clickedId = self.clickedId,
+	            startDataset = self.startDataset,
+	            endDataset = self.endDataset,
+	            startActiveWindow = self.startActiveWindow,
+	            endActiveWindow = self.endActiveWindow,
+	            contextualObj = self.btns.contextualObj,
+	            calculatedObj = self.btns.calculatedObj,
+	            lastClickedBtnObj;
+
+	        if (categoryClicked === 'ALL') {
+	          if (!(startDataset === startActiveWindow && endDataset === endActiveWindow)) {
+	            delete self.clickedId;
+	            delete self.categoryClicked;
+	          }
+	        } else if (categoryClicked === 'contextual') {
+	          lastClickedBtnObj = contextualObj[clickedId];
+	          if (lastClickedBtnObj && !(startActiveWindow === lastClickedBtnObj.contextStart && endActiveWindow === lastClickedBtnObj.contextEnd)) {
+	            delete self.clickedId;
+	            delete self.categoryClicked;
+	          }
+	        } else if (categoryClicked === 'calculated') {
+	          lastClickedBtnObj = calculatedObj[clickedId];
+	          if (lastClickedBtnObj && !(endActiveWindow - startActiveWindow === lastClickedBtnObj.interval)) {
+	            delete self.clickedId;
+	            delete self.categoryClicked;
+	          }
+	        }
+
+	        self.showApplicableCalculatedButtons();
+	        self.heighlightActiveRange();
+	      }
 
 	      // *********** Drzaw the btns initialy ***** //
 
@@ -344,16 +387,17 @@
 	            btnCalc,
 	            calculatedObj = self.btns.calculatedObj,
 	            btnObj;
-
-	        var _loop = function _loop(i) {
-	          var _loop2 = function _loop2(j) {
+	        for (var i = self.timePeriods.length - 1; i >= 0; i--) {
+	          var _loop = function _loop(j) {
 	            var keyAbb = self.timePeriods[i].multipliers[j] + self.timePeriods[i].abbreviation.single,
 	                keyName = self.timePeriods[i].multipliers[j] + self.timePeriods[i].name;
-
+	            var interval = self.timePeriods[i].multipliers[j] * self.timePeriods[i].interval;
 	            btnObj = calculatedObj[keyName] = {
+	              interval: interval,
 	              fn: function fn() {
 	                self.clickedId = keyName;
-	                self.globalReactiveModel.model['x-axis-visible-range-start'] = self.endActiveWindow - self.timePeriods[i].multipliers[j] * self.timePeriods[i].interval;
+	                self.categoryClicked = 'calculated';
+	                self.globalReactiveModel.model['x-axis-visible-range-start'] = self.endActiveWindow - interval;
 	              },
 	              shortKey: keyAbb
 	            };
@@ -373,12 +417,8 @@
 	          };
 
 	          for (var j = self.timePeriods[i].multipliers.length - 1; j >= 0; j--) {
-	            _loop2(j);
+	            _loop(j);
 	          }
-	        };
-
-	        for (var i = self.timePeriods.length - 1; i >= 0; i--) {
-	          _loop(i);
 	        }
 	      }
 
@@ -466,7 +506,7 @@
 	            keyName;
 	        self.generateCtxBtnList();
 
-	        var _loop3 = function _loop3(i) {
+	        var _loop2 = function _loop2(i) {
 	          contextualConfig = i === 0 ? self.extData.style['contextual-config-first'] || {
 	            fill: '#ffffff',
 	            labelFill: '#696969',
@@ -510,7 +550,10 @@
 	          };
 	          keyName = _this2.standardContexualPeriods[i].abbreviation;
 	          btnObj = contextualObj[keyName] = {
+	            contextStart: self.standardContexualPeriods[i].dateStart,
+	            contextEnd: self.standardContexualPeriods[i].dateEnd,
 	            fn: function fn() {
+	              self.categoryClicked = 'contextual';
 	              self.clickedId = self.standardContexualPeriods[i].abbreviation;
 	              self.globalReactiveModel.lock().prop('x-axis-visible-range-start', self.standardContexualPeriods[i].dateStart).prop('x-axis-visible-range-end', self.standardContexualPeriods[i].dateEnd).unlock();
 	            }
@@ -532,7 +575,7 @@
 	        };
 
 	        for (var i = 0; i < this.standardContexualPeriods.length; i++) {
-	          _loop3(i);
+	          _loop2(i);
 	        }
 	      }
 
@@ -594,6 +637,7 @@
 	        // 'ALL' button created
 	        allButton = { fn: function fn() {
 	            self.clickedId = 'ALL';
+	            self.categoryClicked = 'ALL';
 	            self.globalReactiveModel.lock().prop('x-axis-visible-range-start', self.startDataset).prop('x-axis-visible-range-end', self.endDataset).unlock();
 	          } };
 	        allButton.btn = new this.toolbox.Symbol('ALL', true, {

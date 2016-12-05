@@ -103,6 +103,7 @@
 	      self.noCalcButtons = 0;
 	      self.minimumBucket = 5184000000;
 	      self.toolbar = {};
+	      self.categoryClicked;
 	      self.btns = {
 	        contextualObj: {},
 	        calculatedObj: {}
@@ -162,17 +163,23 @@
 	        tertiaryTimePeriods: {}
 	      };
 
+	      self._babTimer = 0;
+
 	      self.propsChangeListener = (start, end) => {
 	        self.startActiveWindow = start[1];
 	        self.endActiveWindow = end[1];
 
-	        if (!self.updatePending) {
-	          self.updatePending = true;
-	          setTimeout(function () {
-	            self.updatePending = false;
-	            self.showApplicableCalculatedButtons();
-	            self.heighlightActiveRange();
-	          }, 300);
+	        if (self._babTimer) {
+	          if (!self.updatePending) {
+	            self.updatePending = true;
+	            setTimeout(function () {
+	              self.updatePending = false;
+	              self.onActiveRangeChange();
+	            }, self._babTimer);
+	          }
+	        } else {
+	          self._babTimer = 300;
+	          self.onActiveRangeChange();
 	        }
 	      };
 	    }
@@ -287,6 +294,42 @@
 	      }
 	    }
 
+	    onActiveRangeChange () {
+	      var self = this,
+	        categoryClicked = self.categoryClicked,
+	        clickedId = self.clickedId,
+	        startDataset = self.startDataset,
+	        endDataset = self.endDataset,
+	        startActiveWindow = self.startActiveWindow,
+	        endActiveWindow = self.endActiveWindow,
+	        contextualObj = self.btns.contextualObj,
+	        calculatedObj = self.btns.calculatedObj,
+	        lastClickedBtnObj;
+
+	      if (categoryClicked === 'ALL') {
+	        if (!(startDataset === startActiveWindow && endDataset === endActiveWindow)) {
+	          delete self.clickedId;
+	          delete self.categoryClicked;
+	        }
+	      } else if (categoryClicked === 'contextual') {
+	        lastClickedBtnObj = contextualObj[clickedId];
+	        if (lastClickedBtnObj && !(startActiveWindow === lastClickedBtnObj.contextStart &&
+	          endActiveWindow === lastClickedBtnObj.contextEnd)) {
+	          delete self.clickedId;
+	          delete self.categoryClicked;
+	        }
+	      } else if (categoryClicked === 'calculated') {
+	        lastClickedBtnObj = calculatedObj[clickedId];
+	        if (lastClickedBtnObj && !((endActiveWindow - startActiveWindow) === lastClickedBtnObj.interval)) {
+	          delete self.clickedId;
+	          delete self.categoryClicked;
+	        }
+	      }
+
+	      self.showApplicableCalculatedButtons();
+	      self.heighlightActiveRange();
+	    }
+
 	    // *********** Drzaw the btns initialy ***** //
 
 	    // adds multipliers to the timerules object
@@ -323,12 +366,13 @@
 	        for (let j = self.timePeriods[i].multipliers.length - 1; j >= 0; j--) {
 	          let keyAbb = self.timePeriods[i].multipliers[j] + self.timePeriods[i].abbreviation.single,
 	            keyName = self.timePeriods[i].multipliers[j] + self.timePeriods[i].name;
-
+	          let interval = (self.timePeriods[i].multipliers[j] * self.timePeriods[i].interval);
 	          btnObj = calculatedObj[keyName] = {
+	            interval: interval,
 	            fn: function () {
 	              self.clickedId = keyName;
-	              self.globalReactiveModel.model['x-axis-visible-range-start'] = self.endActiveWindow -
-	              (self.timePeriods[i].multipliers[j] * self.timePeriods[i].interval);
+	              self.categoryClicked = 'calculated';
+	              self.globalReactiveModel.model['x-axis-visible-range-start'] = self.endActiveWindow - interval;
 	            },
 	            shortKey: keyAbb
 	          };
@@ -470,7 +514,10 @@
 	        };
 	        keyName = this.standardContexualPeriods[i].abbreviation;
 	        btnObj = contextualObj[keyName] = {
+	          contextStart: self.standardContexualPeriods[i].dateStart,
+	          contextEnd: self.standardContexualPeriods[i].dateEnd,
 	          fn: function () {
+	            self.categoryClicked = 'contextual';
 	            self.clickedId = self.standardContexualPeriods[i].abbreviation;
 	            self.globalReactiveModel
 	              .lock()
@@ -552,6 +599,7 @@
 	      // 'ALL' button created
 	      allButton = {fn: function () {
 	        self.clickedId = 'ALL';
+	        self.categoryClicked = 'ALL';
 	        self.globalReactiveModel
 	          .lock()
 	          .prop('x-axis-visible-range-start', self.startDataset)
