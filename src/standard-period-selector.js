@@ -10,27 +10,32 @@ module.exports = function (dep) {
       /**
        * @private
        */
-      this.ratio = 8;
-      this.toolbox = FusionCharts.getComponent('api', 'toolbox');
-      this.HorizontalToolbar = this.toolbox.HorizontalToolbar;
-      this.ComponentGroup = this.toolbox.ComponentGroup;
-      this.SymbolStore = this.toolbox.SymbolStore;
-      this.all = 1;
-      this.calculatedPeriods = [];
-      this.startDataset = 0;
-      // this.endDataset = this.globalReactiveModel.model['x-axis-absolute-range-end'];
-      this.startActiveWindow = 0;
-      this.endActiveWindow = 1;
-      this.standardCalculatedPeriods = [];
-      this.standardContexualPeriods = [];
-      this.startPointUnit = 0;
-      this.startPointMultiplier = 0;
-      this.clickedId = 'ALL';
-      this.noCalcButtons = 0;
-      this.calculatedButtonObj = {};
-      this.minimumBucket = 5184000000;
+      var self = this;
+      self.ratio = 8;
+      self.toolbox = FusionCharts.getComponent('api', 'toolbox');
+      self.HorizontalToolbar = self.toolbox.HorizontalToolbar;
+      self.ComponentGroup = self.toolbox.ComponentGroup;
+      self.SymbolStore = self.toolbox.SymbolStore;
+      self.all = 1;
+      self.calculatedPeriods = [];
+      self.startDataset = 0;
+      // self.endDataset = self.globalReactiveModel.model['x-axis-absolute-range-end'];
+      self.startActiveWindow = 0;
+      self.endActiveWindow = 1;
+      self.standardCalculatedPeriods = [];
+      self.standardContexualPeriods = [];
+      self.startPointUnit = 0;
+      self.startPointMultiplier = 0;
+      self.clickedId = 'ALL';
+      self.noCalcButtons = 0;
+      self.minimumBucket = 5184000000;
+      self.toolbar = {};
+      self.btns = {
+        contextualObj: {},
+        calculatedObj: {}
+      };
 
-      this.tdButtons = [
+      self.tdButtons = [
         {
           'name': 'YTD',
           'abbreviation': 'YTD',
@@ -76,45 +81,74 @@ module.exports = function (dep) {
           'description': 'Today'
         }
       ];
-      this.config = {
+      self.config = {
         anchorPositions: 'right',
         all: '1',
         contextual: '1',
         calculated: '1',
         tertiaryTimePeriods: {}
       };
+
+      self.propsChangeListener = (start, end) => {
+        self.startActiveWindow = start[1];
+        self.endActiveWindow = end[1];
+
+        if (!self.updatePending) {
+          self.updatePending = true;
+          setTimeout(function () {
+            self.updatePending = false;
+            self.showApplicableCalculatedButtons();
+            self.heighlightActiveRange();
+          }, 300);
+        }
+      };
     }
 
+    // ****** Make btns visible ******* /
     /**
      * A function to generate the calculated buttons using
      * the active range and the location of the active range
      */
-    generateCalculatedButtons () {
+
+    hideAllCalcBtns () {
+      var self = this,
+        calculatedObj = self.btns.calculatedObj,
+        i;
+      for (i in calculatedObj) {
+        calculatedObj[i].btn.hide();
+      }
+    }
+
+    showApplicableCalculatedButtons () {
       var targetBlock = this.endActiveWindow - this.startDataset,
         i = 0,
         j = 0,
         activeWindow = this.endActiveWindow - this.startActiveWindow,
-        count = 0,
-        self = this;
+        self = this,
+        key,
+        calculatedObj = self.btns.calculatedObj;
+
+      self.hideAllCalcBtns();
       self.standardCalculatedPeriods = [];
       for (i = 0; i < self.timePeriods.length; i++) {
         // checking whether the unit is applicable for the current target block
         if (targetBlock / self.timePeriods[i].interval >= 1) {
           // checking whether the unit is of the higher order and only multiplier 1 is applicable
+          if (this.extData['default-select'] === '1' + self.timePeriods[i].abbreviation.single) {
+            this.clickedIdVal = self.timePeriods[i].interval;
+          }
           if (Math.floor((activeWindow) / self.timePeriods[i].interval) < 1) {
+            // self.show('1' + self.timePeriods[i].abbreviation.single);
+            // self.calculatedObj['1' + self.timePeriods[i].abbreviation.single].show();
             self.standardCalculatedPeriods.push({
-              'abbreviation': self.timePeriods[i].abbreviation.single,
-              'description': self.timePeriods[i].description,
-              'milliseconds': self.timePeriods[i].interval,
               'name': self.timePeriods[i].name,
+              'abbreviation': self.timePeriods[i].abbreviation.single,
               'multipliers': [1]
             });
           } else { // if the unit is of the order of the target block and calculating the multipliers
             self.standardCalculatedPeriods.push({
-              'abbreviation': self.timePeriods[i].abbreviation.single,
-              'description': self.timePeriods[i].description,
-              'milliseconds': self.timePeriods[i].interval,
               'name': self.timePeriods[i].name,
+              'abbreviation': self.timePeriods[i].abbreviation.single,
               'multipliers': []
             });
             // calculating and populating the applicable multpliers of each unit
@@ -129,17 +163,115 @@ module.exports = function (dep) {
           }
         }
       }
-      this.noCalcButtons = Infinity;
-      for (i = 0; i < this.standardCalculatedPeriods.length; i++) {
-        for (j = 0; j < this.standardCalculatedPeriods[i].multipliers.length; j++) {
-          ++count;
-          if (this.noCalcButtons > i) {
-            this.noCalcButtons = i;
-          }
-          if (count <= 4) {
-            this.startPointMultiplier = j;
-            this.startPointUnit = i;
-          }
+
+      for (i = 0; i < self.standardCalculatedPeriods.length; i++) {
+        for (j = 0; j < self.standardCalculatedPeriods[i].multipliers.length; j++) {
+          key = self.standardCalculatedPeriods[i].multipliers[j] +
+            self.standardCalculatedPeriods[i].name;
+          calculatedObj[key].btn && calculatedObj[key].btn.show();
+        }
+      }
+      self.toolbar && self.toolbar.redraw();
+    }
+
+    // ******** React on active property change ****
+
+    heighlightActiveRange () {
+      // first check w.r.t contextual btns then others
+      var sps = this,
+        selectLine = sps.saveSelectLine,
+        boundElement,
+        clickedId = sps.clickedId,
+        bBox,
+        x1,
+        x2,
+        y2,
+        activeBtn,
+        contextualObj = sps.btns.contextualObj,
+        calculatedObj = sps.btns.calculatedObj;
+
+      // if the heighliter is not createcd create it
+      if (!selectLine) {
+        selectLine = sps.saveSelectLine || (sps.saveSelectLine = sps.graphics.paper.path({
+          'stroke': '#c95a5a',
+          'stroke-width': '2px'
+        }).toFront());
+      }
+
+      activeBtn = contextualObj[clickedId] || calculatedObj[clickedId] || sps.btns[clickedId];
+
+      if (activeBtn) {
+        boundElement = activeBtn.btn.svgElems.node;
+        bBox = boundElement.getBBox();
+        x1 = bBox.x;
+        x2 = x1 + bBox.width;
+        y2 = bBox.y + bBox.height;
+        selectLine.show().attr({
+          path: ['M', x1 - 0.5, y2 - 0.5, 'L', x2 + 0.5, y2 - 0.5]
+        });
+      } else {
+        selectLine.hide();
+      }
+    }
+
+    // *********** Drzaw the btns initialy ***** //
+
+    // adds multipliers to the timerules object
+    processMultipliers (timeArr) {
+      var self = this;
+      for (let i = 0; i < timeArr.length; i++) {
+        let len = timeArr[i].possibleFactors.length,
+          timeName = timeArr[i] && timeArr[i].name,
+          timeObj = timeArr && timeArr[i],
+          customMultipliers = self && self.customMultipliers || {};
+        timeObj.multipliers = [];
+        if (customMultipliers[timeName]) {
+          timeObj.multipliers = customMultipliers[timeName];
+        } else if (len === 1) {
+          timeObj.multipliers.push(timeObj.possibleFactors[0]);
+        } else if (len === 2) {
+          timeObj.multipliers.push(timeObj.possibleFactors[0]);
+          timeObj.multipliers.push(timeObj.possibleFactors[len - 1]);
+        } else {
+          timeObj.multipliers.push(timeObj.possibleFactors[0]);
+          timeObj.multipliers.push(Math.floor(timeObj.possibleFactors[len - 1] / 2));
+          timeObj.multipliers.push(timeObj.possibleFactors[len - 1]);
+        }
+      }
+      return timeArr;
+    }
+
+    createCalculatedButtons (buttonGroup) {
+      var self = this,
+        btnCalc,
+        calculatedObj = self.btns.calculatedObj,
+        btnObj;
+      for (let i = self.timePeriods.length - 1; i >= 0; i--) {
+        for (let j = self.timePeriods[i].multipliers.length - 1; j >= 0; j--) {
+          let keyAbb = self.timePeriods[i].multipliers[j] + self.timePeriods[i].abbreviation.single,
+            keyName = self.timePeriods[i].multipliers[j] + self.timePeriods[i].name;
+
+          btnObj = calculatedObj[keyName] = {
+            fn: function () {
+              self.clickedId = keyName;
+              self.globalReactiveModel.model['x-axis-visible-range-start'] = self.endActiveWindow -
+              (self.timePeriods[i].multipliers[j] * self.timePeriods[i].interval);
+            },
+            shortKey: keyAbb
+          };
+
+          btnCalc = new this.toolbox.Symbol(keyAbb, true, {
+            paper: this.graphics.paper,
+            chart: this.chart,
+            smartLabel: this.smartLabel,
+            chartContainer: this.graphics.container
+          }, self.extData.style['calculated-config']).attachEventHandlers({
+            'click': btnObj.fn,
+            tooltext: self.timePeriods[i].multipliers[j] + ' ' + self.timePeriods[i].description
+          });
+          btnObj.btn = btnCalc;
+          buttonGroup.addSymbol(btnCalc);
+          // calculatedButtons.hide();
         }
       }
     }
@@ -148,7 +280,7 @@ module.exports = function (dep) {
      * A function to generate the contextual buttons using
      * the end point of the time-scale
      */
-    generateContextualButtons () {
+    generateCtxBtnList () {
       // generating an array with applicable TD buttons
       var buttons = [],
         i = 0,
@@ -213,78 +345,176 @@ module.exports = function (dep) {
       this.standardContexualPeriods = buttons;
     }
 
-    processMultipliers (timeArr) {
-      var self = this;
-      for (let i = 0; i < timeArr.length; i++) {
-        let len = timeArr[i].possibleFactors.length,
-          timeName = timeArr[i] && timeArr[i].name,
-          timeObj = timeArr && timeArr[i],
-          customMultipliers = self && self.customMultipliers || {};
-        timeObj.multipliers = [];
-        if (customMultipliers[timeName]) {
-          timeObj.multipliers = customMultipliers[timeName];
-        } else if (len === 1) {
-          timeObj.multipliers.push(timeObj.possibleFactors[0]);
-        } else if (len === 2) {
-          timeObj.multipliers.push(timeObj.possibleFactors[0]);
-          timeObj.multipliers.push(timeObj.possibleFactors[len - 1]);
-        } else {
-          timeObj.multipliers.push(timeObj.possibleFactors[0]);
-          timeObj.multipliers.push(Math.floor(timeObj.possibleFactors[len - 1] / 2));
-          timeObj.multipliers.push(timeObj.possibleFactors[len - 1]);
+    createContextualButtons (buttonGroup) {
+      var contextualButtons = [],
+        self = this,
+        contextualConfig,
+        contextualObj = self.btns.contextualObj,
+        btnObj,
+        keyName;
+      self.generateCtxBtnList();
+      for (let i = 0; i < this.standardContexualPeriods.length; i++) {
+        contextualConfig = (i === 0) ? self.extData.style['contextual-config-first'] || {
+          fill: '#ffffff',
+          labelFill: '#696969',
+          symbolStrokeWidth: '2',
+          stroke: '#ced5d4',
+          strokeWidth: '1',
+          height: 22,
+          hoverFill: '#ced5d4',
+          radius: 1,
+          margin: {
+            right: 0,
+            left: 5
+          },
+          btnTextStyle: {
+            'fontFamily': '"Lucida Grande", sans-serif',
+            'fontSize': '13',
+            'fill': '#696969',
+            'line-height': '1',
+            'letter-spacing': '-0.04em'
+          }
+        } : self.extData.style['contextual-config'] || {
+          fill: '#ffffff',
+          labelFill: '#696969',
+          symbolStrokeWidth: '2',
+          stroke: '#ced5d4',
+          strokeWidth: '1',
+          height: 22,
+          hoverFill: '#ced5d4',
+          radius: 1,
+          margin: {
+            right: 0,
+            left: 0
+          },
+          btnTextStyle: {
+            'fontFamily': '"Lucida Grande", sans-serif',
+            'fontSize': '13',
+            'fill': '#696969',
+            'line-height': '1',
+            'letter-spacing': '-0.04em'
+          }
+        };
+        keyName = this.standardContexualPeriods[i].abbreviation;
+        btnObj = contextualObj[keyName] = {
+          fn: function () {
+            self.clickedId = self.standardContexualPeriods[i].abbreviation;
+            self.globalReactiveModel
+              .lock()
+              .prop('x-axis-visible-range-start', self.standardContexualPeriods[i].dateStart)
+              .prop('x-axis-visible-range-end', self.standardContexualPeriods[i].dateEnd)
+              .unlock();
+          }
+        };
+
+        btnObj.btn = new this.toolbox.Symbol(this.standardContexualPeriods[i].abbreviation, true, {
+          paper: this.graphics.paper,
+          chart: this.chart,
+          smartLabel: this.smartLabel,
+          chartContainer: this.graphics.container
+        }, contextualConfig)
+          .attachEventHandlers({
+            'click': btnObj.fn,
+            tooltext: this.standardContexualPeriods[i].description
+          });
+
+        if (self.standardContexualPeriods[i].dateEnd - self.standardContexualPeriods[i].dateStart >= self.minimumBucket) {
+          buttonGroup.addSymbol(btnObj.btn);
         }
       }
-      return timeArr;
     }
 
-    /**
-     * A function to set the active period's
-     * start and end point
-     * @param  {number} date stamp - A UNIX timestamp to be set as the start point of active period
-     * @param  {number} date stamp - A UNIX timestamp to be set as the end point of active period
-     */
-    setActivePeriod (a, b) {
-      var start,
-        end;
-      if (arguments.length === 1 && this.periodButtonClicked) {
-        end = this.endActiveWindow; // this.globalReactiveModel.model['x-axis-visible-range-end'];
-        start = end - arguments[0];
-        this.startActiveWindow = start;
-        // this.endActiveWindow = end;
-        this.globalReactiveModel
+    // creates toolbar
+    createToolbar () {
+      var buttonGroup,
+        toolbar = this.toolbar,
+        allButton,
+        self = this,
+        fromDateLabel,
+        group;
+
+      // initiating the toolbar
+      toolbar = new this.HorizontalToolbar({
+        paper: this.graphics.paper,
+        chart: this.chart,
+        smartLabel: this.smartLabel,
+        chartContainer: this.graphics.container
+      });
+      toolbar.setConfig({
+        fill: '#fff',
+        borderThickness: 0
+      });
+
+      // making group for the extension label
+      group = new this.toolbox.ComponentGroup({
+        paper: this.graphics.paper,
+        chart: this.chart,
+        smartLabel: this.smartLabel,
+        chartContainer: this.graphics.container
+      });
+
+      // making buttonGroup for the buttons
+      buttonGroup = new this.toolbox.ComponentGroup({
+        paper: this.graphics.paper,
+        chart: this.chart,
+        smartLabel: this.smartLabel,
+        chartContainer: this.graphics.container
+      });
+      buttonGroup.setConfig({
+        fill: '#fff',
+        borderThickness: 0
+      });
+      group.setConfig({
+        fill: '#fff',
+        borderThickness: 0
+      });
+
+      // extension label
+      fromDateLabel = new this.toolbox.Label('Zoom:', {
+        smartLabel: this.smartLabel,
+        paper: this.graphics.paper
+      }, self.extData.style['label-config']);
+      group.addSymbol(fromDateLabel);
+
+      // 'ALL' button created
+      allButton = {fn: function () {
+        self.clickedId = 'ALL';
+        self.globalReactiveModel
           .lock()
-          .prop('x-axis-visible-range-start', this.startActiveWindow)
+          .prop('x-axis-visible-range-start', self.startDataset)
+          .prop('x-axis-visible-range-end', self.endDataset)
           .unlock();
-      } else if (arguments.length === 2 && this.periodButtonClicked) {
-        start = arguments[0];
-        end = arguments[1];
-        this.startActiveWindow = start;
-        this.endActiveWindow = end;
-        this.globalReactiveModel
-          .lock()
-          .prop('x-axis-visible-range-start', this.startActiveWindow)
-          .prop('x-axis-visible-range-end', this.endActiveWindow)
-          .unlock();
-      }
-      this.generateCalculatedButtons();
-      this.generateContextualButtons();
-    }
+      }};
+      allButton.btn = new this.toolbox.Symbol('ALL', true, {
+        paper: this.graphics.paper,
+        chart: this.chart,
+        smartLabel: this.smartLabel,
+        chartContainer: this.graphics.container
+      }, self.extData.style['all-config']).attachEventHandlers({
+        click: allButton.fn,
+        tooltext: 'ALL'
+      });
 
-    /**
-     * A function to set the start and end point of the
-     * entire time-line
-     * @param  {number} date stamp - A UNIX timestamp to be set as the start point of time-line
-     * @param  {number} date stamp - A UNIX timestamp to be set as the end point of time-line
-     */
+      self.btns['ALL'] = allButton;
 
-    /**
-     * A function to set the object to set the user preferences
-     */
-    configure (config) {
-      this.config = config;
-    }
+      buttonGroup.addSymbol(allButton.btn);
 
-    /**
+      // create all calculated button
+      self.createCalculatedButtons(buttonGroup);
+
+      // create all contextual button
+      self.createContextualButtons(buttonGroup);
+
+      // adding group and button group to toolbar
+      toolbar.addComponent(group);
+      toolbar.addComponent(buttonGroup);
+      this.toolbar = toolbar;
+      return toolbar;
+    };
+
+    // *********** Extension interface methods *********//
+
+      /**
      * Fusioncharts life cycle method for extension
      */
     init (require) {
@@ -459,275 +689,15 @@ module.exports = function (dep) {
         'year': [1, 3]
       };
       instance.clickedId = instance.extData['default-select'] || 'ALL';
-      instance.setActivePeriod(instance.startActiveWindow, instance.endActiveWindow);
+      // instance.setActivePeriod(instance.startActiveWindow, instance.endActiveWindow);
       instance.toolbars = [];
       instance.measurement = {};
       instance.flag = true;
 
       instance.toolbars.push(instance.createToolbar());
 
-      instance.globalReactiveModel.onPropsChange(['x-axis-visible-range-start', 'x-axis-visible-range-end'], propsHandler);
-      function propsHandler (start, end, flag) {
-        if (instance.currentCategory === 'contextual') {
-          if (instance.endActiveWindow === instance.endDataset) {
-            for (let i = 0; i < instance.standardContexualPeriods.length; i++) {
-              if ((instance.standardContexualPeriods[i].dateEnd - instance.standardContexualPeriods[i].dateStart) >= (end[1] - start[1])) {
-                instance.clickedId = instance.standardContexualPeriods[i].abbreviation;
-              }
-            }
-          } else {
-            for (let i = 0; i < instance.standardCalculatedPeriods.length; i++) {
-              for (let j = 0; j < instance.standardCalculatedPeriods[i].multipliers.length; j++) {
-                if ((end[1] - start[1]) >= instance.standardCalculatedPeriods[i].multipliers[j] * instance.standardCalculatedPeriods[i].milliseconds) {
-                  instance.clickedId = instance.standardCalculatedPeriods[i].multipliers[j] + instance.standardCalculatedPeriods[i].abbreviation;
-                }
-              }
-            }
-          }
-        } else if (instance.currentCategory === 'calculated') {
-          for (let i = 0; i < instance.standardCalculatedPeriods.length; i++) {
-            for (let j = 0; j < instance.standardCalculatedPeriods[i].multipliers.length; j++) {
-              if ((end[1] - start[1]) >= instance.standardCalculatedPeriods[i].multipliers[j] * instance.standardCalculatedPeriods[i].milliseconds) {
-                instance.clickedId = instance.standardCalculatedPeriods[i].multipliers[j] + instance.standardCalculatedPeriods[i].abbreviation;
-              }
-            }
-          }
-        }
-        instance.lastDisposed = instance.lastDisposed || 0;
-        if (flag) {
-          instance.launchedPropsHandler = false;
-          start = instance.propsStart;
-          end = instance.propsEnd;
-        }
-        instance.propsStart = start;
-        instance.propsEnd = end;
-        if (+new Date() - instance.lastDisposed < 400) {
-          if (!instance.launchedPropsHandler) {
-            instance.launchedPropsHandler = true;
-            setTimeout(propsHandler.bind(null, 0, 0, true));
-          }
-          return;
-        }
-
-        if (instance.flagDrawn < 3) {
-          instance.flagDrawn++;
-          instance.cantDispose = true;
-          instance.lastDisposed = +new Date();
-          instance.setActivePeriod(start[1], end[1]);
-          instance.toolbar.dispose();
-          instance.toolbars.pop();
-          instance.toolbars.push(instance.createToolbar());
-          instance.getLogicalSpace();
-          instance.draw();
-        } else {
-          // instance.cantDispose = false;
-          instance.flagDrawn = 0;
-        }
-      }
+      instance.globalReactiveModel.onPropsChange(['x-axis-visible-range-start', 'x-axis-visible-range-end'], instance.propsChangeListener);
       return instance;
-    };
-
-    createToolbar () {
-      var unigroup,
-        toolbar,
-        calculatedButtons,
-        contextualButtons,
-        allButton,
-        self = this,
-        deductorAr = [],
-        deductor,
-        i,
-        j,
-        contextualConfig,
-        fromDateLabel,
-        group;
-      group = new this.toolbox.ComponentGroup({
-        paper: this.graphics.paper,
-        chart: this.chart,
-        smartLabel: this.smartLabel,
-        chartContainer: this.graphics.container
-      });
-
-      unigroup = new this.toolbox.UniSelectComponentGroup({
-        paper: this.graphics.paper,
-        chart: this.chart,
-        smartLabel: this.smartLabel,
-        chartContainer: this.graphics.container
-      });
-      unigroup.setConfig({
-        fill: '#fff',
-        borderThickness: 0
-      });
-      group.setConfig({
-        fill: '#fff',
-        borderThickness: 0
-      });
-      toolbar = new this.HorizontalToolbar({
-        paper: this.graphics.paper,
-        chart: this.chart,
-        smartLabel: this.smartLabel,
-        chartContainer: this.graphics.container
-      });
-      toolbar.setConfig({
-        fill: '#fff',
-        borderThickness: 0
-      });
-      fromDateLabel = new this.toolbox.Label('Zoom:', {
-        smartLabel: this.smartLabel,
-        paper: this.graphics.paper
-      }, self.extData.style['label-config']);
-      group.addSymbol(fromDateLabel);
-      allButton = new this.toolbox.Symbol('ALL', true, {
-        paper: this.graphics.paper,
-        chart: this.chart,
-        smartLabel: this.smartLabel,
-        chartContainer: this.graphics.container
-      }, self.extData.style['all-config'] || {
-        // --config--
-        fill: '#ffffff',
-        labelFill: '#696969',
-        symbolStrokeWidth: '2',
-        stroke: '#ced5d4',
-        strokeWidth: '1',
-        hoverFill: '#ced5d4',
-        height: 22,
-        radius: 1,
-        margin: {
-          right: 5
-        },
-        btnTextStyle: {
-          'fontFamily': '"Lucida Grande", sans-serif',
-          'fontSize': '13',
-          'fill': '#696969',
-          'line-height': '1',
-          'letter-spacing': '-0.04em'
-        }
-      }).attachEventHandlers({
-        click: function () {
-          self.periodButtonClicked = true;
-          self.currentCategory = 'ALL';
-          self.clickedId = 'ALL';
-          self.flagDrawn = 2;
-          self.setActivePeriod(self.startDataset, self.endDataset);
-        },
-        tooltext: 'ALL'
-      });
-
-      unigroup.addSymbol(allButton);
-      for (i = 0; i < this.standardCalculatedPeriods.length; i++) {
-        for (j = this.standardCalculatedPeriods[i].multipliers.length - 1; j >= 0; j--) {
-          deductorAr.push(self.standardCalculatedPeriods[i].multipliers[j] * self.standardCalculatedPeriods[i].milliseconds);
-        }
-      }
-
-      calculatedButtons = {};
-      for (let key in this.calculatedButtonObj) {
-        this.calculatedButtonObj[key].hide();
-      }
-      for (let i = self.standardCalculatedPeriods.length - 1; i >= 0; i--) {
-        for (let j = self.standardCalculatedPeriods[i].multipliers.length - 1; j >= 0; j--) {
-          let keyAbb = self.standardCalculatedPeriods[i].multipliers[j] + self.standardCalculatedPeriods[i].abbreviation;
-          calculatedButtons = new this.toolbox.Symbol(keyAbb, true, {
-            paper: this.graphics.paper,
-            chart: this.chart,
-            smartLabel: this.smartLabel,
-            chartContainer: this.graphics.container
-          }, self.extData.style['calculated-config']).attachEventHandlers({
-            'click': function () {
-              self.periodButtonClicked = true;
-              self.clickedId = keyAbb;
-              self.currentCategory = 'calculated';
-              deductor = (self.standardCalculatedPeriods[i].multipliers[j] * self.standardCalculatedPeriods[i].milliseconds);
-              self.setActivePeriod(self.endActiveWindow - deductor, self.endActiveWindow);
-            },
-            tooltext: self.standardCalculatedPeriods[i].multipliers[j] + ' ' + self.standardCalculatedPeriods[i].description
-          });
-          this.calculatedButtonObj[keyAbb] = calculatedButtons;
-          // unigroup.addSymbol(calculatedButtons[i]);
-          this.calculatedButtonObj[keyAbb].show();
-          unigroup.addSymbol(this.calculatedButtonObj[keyAbb]);
-        }
-      }
-
-      contextualButtons = [];
-
-      for (let i = 0; i < this.standardContexualPeriods.length; i++) {
-        contextualConfig = (i === 0) ? self.extData.style['contextual-config-first'] || {
-          fill: '#ffffff',
-          labelFill: '#696969',
-          symbolStrokeWidth: '2',
-          stroke: '#ced5d4',
-          strokeWidth: '1',
-          height: 22,
-          hoverFill: '#ced5d4',
-          radius: 1,
-          margin: {
-            right: 0,
-            left: 5
-          },
-          btnTextStyle: {
-            'fontFamily': '"Lucida Grande", sans-serif',
-            'fontSize': '13',
-            'fill': '#696969',
-            'line-height': '1',
-            'letter-spacing': '-0.04em'
-          }
-        } : self.extData.style['contextual-config'] || {
-          fill: '#ffffff',
-          labelFill: '#696969',
-          symbolStrokeWidth: '2',
-          stroke: '#ced5d4',
-          strokeWidth: '1',
-          height: 22,
-          hoverFill: '#ced5d4',
-          radius: 1,
-          margin: {
-            right: 0,
-            left: 0
-          },
-          btnTextStyle: {
-            'fontFamily': '"Lucida Grande", sans-serif',
-            'fontSize': '13',
-            'fill': '#696969',
-            'line-height': '1',
-            'letter-spacing': '-0.04em'
-          }
-        };
-        contextualButtons[i] = new this.toolbox.Symbol(this.standardContexualPeriods[i].abbreviation, true, {
-          paper: this.graphics.paper,
-          chart: this.chart,
-          smartLabel: this.smartLabel,
-          chartContainer: this.graphics.container
-        }, contextualConfig)
-          .attachEventHandlers({
-            'click': function () {
-              self.periodButtonClicked = true;
-              self.flagDrawn = 1;
-              self.currentCategory = 'contextual';
-              self.clickedId = self.standardContexualPeriods[i].abbreviation;
-              self.setActivePeriod(self.standardContexualPeriods[i].dateStart, self.standardContexualPeriods[i].dateEnd);
-            },
-            tooltext: this.standardContexualPeriods[i].description
-          });
-        contextualButtons.minViable = (self.standardContexualPeriods[i].dateEnd - self.standardContexualPeriods[i].dateStart < self.minimumBucket);
-        if (self.standardContexualPeriods[i].dateEnd - self.standardContexualPeriods[i].dateStart >= self.minimumBucket) {
-          unigroup.addSymbol(contextualButtons[i]);
-        }
-      }
-
-      this.SymbolStore.register('textBoxIcon', function (x, y, rad, w, h, padX, padY) {
-        var x1 = x - w / 2 + padX / 2,
-          x2 = x + w / 2 - padX / 2,
-          y1 = y - h / 2 + padY / 2,
-          y2 = y + h / 2 - padY / 2;
-
-        return ['M', x1, y1, 'L', x2, y1, 'L', x2, y2, 'L', x1, y2, 'Z'];
-      });
-
-      toolbar.addComponent(group);
-      toolbar.addComponent(unigroup);
-      this.toolbar = toolbar;
-      return toolbar;
     };
 
     getLogicalSpace (availableWidth = this._pWidth, availableHeight = this._pHeight) {
@@ -810,25 +780,19 @@ module.exports = function (dep) {
       return this;
     };
 
+    // draws extension in the canvas
     draw (x, y, width, height, group) {
-      var measurement = this.measurement,
-        toolbars = this.toolbars,
+      var self = this,
+        measurement = self.measurement,
+        toolbars = self.toolbars,
         ln,
         i,
         toolbar,
-        symbolList,
-        boundElement,
-        bBox,
-        x1,
-        x2,
-        y2,
-        selectLine;
-
-      this.flag = true;
-      selectLine = this.saveSelectLine || this.graphics.paper.path({
-        'stroke': '#c95a5a',
-        'stroke-width': '2px'
-      }).toFront();
+        selectLine,
+        contextualObj = self.btns.contextualObj,
+        calculatedObj = self.btns.calculatedObj,
+        clickedId = self.clickedId,
+        activeBtn;
       x = x === undefined ? measurement.x : x;
       y = y === undefined ? measurement.y : y;
       width = width === undefined ? measurement.width : width;
@@ -840,23 +804,18 @@ module.exports = function (dep) {
           toolbar.draw(x, y, group);
         }
       }
-      this.saveSelectLine = selectLine;
-      symbolList = toolbars[0].componentGroups[1].symbolList;
-      for (let i = 0, ii = symbolList.length; i < ii; i++) {
-        if (symbolList[i].symbol === this.clickedId) {
-          boundElement = symbolList[i].getBoundElement();
-          bBox = boundElement.getBBox();
-          x1 = bBox.x;
-          x2 = bBox.x2;
-          y2 = bBox.y2;
 
-          selectLine.attr({
-            path: ['M', x1 - 0.5, y2 - 0.5, 'L', x2 + 0.5, y2 - 0.5]
-          });
-          this.flagDrawn = 2;
+      activeBtn = contextualObj[clickedId] || self.btns[clickedId];
+      if (!activeBtn) {
+        for (i in calculatedObj) {
+          if (calculatedObj[i].shortKey === clickedId) {
+            activeBtn = calculatedObj[i];
+          }
         }
       }
+      this.saveSelectLine = selectLine;
       this.minimumBucket = this.globalReactiveModel.model['minimum-consecutive-datestamp-diff'] * this.globalReactiveModel.model['x-axis-maximum-allowed-ticks'];
+      activeBtn && activeBtn.fn && activeBtn.fn();
     };
   }
   return StandardPeriodSelector;
