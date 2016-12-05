@@ -543,19 +543,27 @@
 
 	        instance.globalReactiveModel.onPropsChange(['x-axis-visible-range-start', 'x-axis-visible-range-end'], propsHandler);
 	        function propsHandler(start, end, flag) {
-	          if (instance.currentCategory === 'calculated') {
-	            for (var i = 0; i < instance.standardCalculatedPeriods.length; i++) {
-	              for (var j = 0; j < instance.standardCalculatedPeriods[i].multipliers.length; j++) {
-	                if (end[1] - start[1] >= instance.standardCalculatedPeriods[i].multipliers[j] * instance.standardCalculatedPeriods[i].milliseconds) {
-	                  instance.clickedId = instance.standardCalculatedPeriods[i].multipliers[j] + instance.standardCalculatedPeriods[i].abbreviation;
+	          if (instance.currentCategory === 'contextual') {
+	            if (instance.endActiveWindow === instance.endDataset) {
+	              for (var i = 0; i < instance.standardContexualPeriods.length; i++) {
+	                if (instance.standardContexualPeriods[i].dateEnd - instance.standardContexualPeriods[i].dateStart >= end[1] - start[1]) {
+	                  instance.clickedId = instance.standardContexualPeriods[i].abbreviation;
+	                }
+	              }
+	            } else {
+	              for (var _i = 0; _i < instance.standardCalculatedPeriods.length; _i++) {
+	                for (var j = 0; j < instance.standardCalculatedPeriods[_i].multipliers.length; j++) {
+	                  if (end[1] - start[1] >= instance.standardCalculatedPeriods[_i].multipliers[j] * instance.standardCalculatedPeriods[_i].milliseconds) {
+	                    instance.clickedId = instance.standardCalculatedPeriods[_i].multipliers[j] + instance.standardCalculatedPeriods[_i].abbreviation;
+	                  }
 	                }
 	              }
 	            }
-	          } else if (instance.currentCategory === 'contextual') {
-	            if (instance.endActiveWindow === instance.endDataset) {
-	              for (var _i = 0; _i < instance.standardContexualPeriods.length; _i++) {
-	                if (instance.standardContexualPeriods.dateEnd - instance.standardContexualPeriods.dateStart <= end[1] - start[1]) {
-	                  instance.clickedId = instance.standardContexualPeriods[_i].abbreviation;
+	          } else if (instance.currentCategory === 'calculated') {
+	            for (var _i2 = 0; _i2 < instance.standardCalculatedPeriods.length; _i2++) {
+	              for (var _j = 0; _j < instance.standardCalculatedPeriods[_i2].multipliers.length; _j++) {
+	                if (end[1] - start[1] >= instance.standardCalculatedPeriods[_i2].multipliers[_j] * instance.standardCalculatedPeriods[_i2].milliseconds) {
+	                  instance.clickedId = instance.standardCalculatedPeriods[_i2].multipliers[_j] + instance.standardCalculatedPeriods[_i2].abbreviation;
 	                }
 	              }
 	            }
@@ -695,9 +703,9 @@
 	          this.calculatedButtonObj[key].hide();
 	        }
 
-	        var _loop = function _loop(_i2) {
-	          var _loop3 = function _loop3(_j) {
-	            var keyAbb = self.standardCalculatedPeriods[_i2].multipliers[_j] + self.standardCalculatedPeriods[_i2].abbreviation;
+	        var _loop = function _loop(_i3) {
+	          var _loop3 = function _loop3(_j2) {
+	            var keyAbb = self.standardCalculatedPeriods[_i3].multipliers[_j2] + self.standardCalculatedPeriods[_i3].abbreviation;
 	            calculatedButtons = new _this.toolbox.Symbol(keyAbb, true, {
 	              paper: _this.graphics.paper,
 	              chart: _this.chart,
@@ -708,10 +716,10 @@
 	                self.periodButtonClicked = true;
 	                self.clickedId = keyAbb;
 	                self.currentCategory = 'calculated';
-	                deductor = self.standardCalculatedPeriods[_i2].multipliers[_j] * self.standardCalculatedPeriods[_i2].milliseconds;
+	                deductor = self.standardCalculatedPeriods[_i3].multipliers[_j2] * self.standardCalculatedPeriods[_i3].milliseconds;
 	                self.setActivePeriod(self.endActiveWindow - deductor, self.endActiveWindow);
 	              },
-	              tooltext: self.standardCalculatedPeriods[_i2].multipliers[_j] + ' ' + self.standardCalculatedPeriods[_i2].description
+	              tooltext: self.standardCalculatedPeriods[_i3].multipliers[_j2] + ' ' + self.standardCalculatedPeriods[_i3].description
 	            });
 	            _this.calculatedButtonObj[keyAbb] = calculatedButtons;
 	            // unigroup.addSymbol(calculatedButtons[i]);
@@ -719,19 +727,19 @@
 	            unigroup.addSymbol(_this.calculatedButtonObj[keyAbb]);
 	          };
 
-	          for (var _j = self.standardCalculatedPeriods[_i2].multipliers.length - 1; _j >= 0; _j--) {
-	            _loop3(_j);
+	          for (var _j2 = self.standardCalculatedPeriods[_i3].multipliers.length - 1; _j2 >= 0; _j2--) {
+	            _loop3(_j2);
 	          }
 	        };
 
-	        for (var _i2 = self.standardCalculatedPeriods.length - 1; _i2 >= 0; _i2--) {
-	          _loop(_i2);
+	        for (var _i3 = self.standardCalculatedPeriods.length - 1; _i3 >= 0; _i3--) {
+	          _loop(_i3);
 	        }
 
 	        contextualButtons = [];
 
-	        var _loop2 = function _loop2(_i3) {
-	          contextualConfig = _i3 === 0 ? self.extData.style['contextual-config-first'] || {
+	        var _loop2 = function _loop2(_i4) {
+	          contextualConfig = _i4 === 0 ? self.extData.style['contextual-config-first'] || {
 	            fill: '#ffffff',
 	            labelFill: '#696969',
 	            symbolStrokeWidth: '2',
@@ -772,7 +780,7 @@
 	              'letter-spacing': '-0.04em'
 	            }
 	          };
-	          contextualButtons[_i3] = new _this.toolbox.Symbol(_this.standardContexualPeriods[_i3].abbreviation, true, {
+	          contextualButtons[_i4] = new _this.toolbox.Symbol(_this.standardContexualPeriods[_i4].abbreviation, true, {
 	            paper: _this.graphics.paper,
 	            chart: _this.chart,
 	            smartLabel: _this.smartLabel,
@@ -782,19 +790,19 @@
 	              self.periodButtonClicked = true;
 	              self.flagDrawn = 1;
 	              self.currentCategory = 'contextual';
-	              self.clickedId = self.standardContexualPeriods[_i3].abbreviation;
-	              self.setActivePeriod(self.standardContexualPeriods[_i3].dateStart, self.standardContexualPeriods[_i3].dateEnd);
+	              self.clickedId = self.standardContexualPeriods[_i4].abbreviation;
+	              self.setActivePeriod(self.standardContexualPeriods[_i4].dateStart, self.standardContexualPeriods[_i4].dateEnd);
 	            },
-	            tooltext: _this.standardContexualPeriods[_i3].description
+	            tooltext: _this.standardContexualPeriods[_i4].description
 	          });
-	          contextualButtons.minViable = self.standardContexualPeriods[_i3].dateEnd - self.standardContexualPeriods[_i3].dateStart < self.minimumBucket;
-	          if (self.standardContexualPeriods[_i3].dateEnd - self.standardContexualPeriods[_i3].dateStart >= self.minimumBucket) {
-	            unigroup.addSymbol(contextualButtons[_i3]);
+	          contextualButtons.minViable = self.standardContexualPeriods[_i4].dateEnd - self.standardContexualPeriods[_i4].dateStart < self.minimumBucket;
+	          if (self.standardContexualPeriods[_i4].dateEnd - self.standardContexualPeriods[_i4].dateStart >= self.minimumBucket) {
+	            unigroup.addSymbol(contextualButtons[_i4]);
 	          }
 	        };
 
-	        for (var _i3 = 0; _i3 < this.standardContexualPeriods.length; _i3++) {
-	          _loop2(_i3);
+	        for (var _i4 = 0; _i4 < this.standardContexualPeriods.length; _i4++) {
+	          _loop2(_i4);
 	        }
 
 	        this.SymbolStore.register('textBoxIcon', function (x, y, rad, w, h, padX, padY) {
@@ -933,9 +941,9 @@
 	        }
 	        this.saveSelectLine = selectLine;
 	        symbolList = toolbars[0].componentGroups[1].symbolList;
-	        for (var _i4 = 0, ii = symbolList.length; _i4 < ii; _i4++) {
-	          if (symbolList[_i4].symbol === this.clickedId) {
-	            boundElement = symbolList[_i4].getBoundElement();
+	        for (var _i5 = 0, ii = symbolList.length; _i5 < ii; _i5++) {
+	          if (symbolList[_i5].symbol === this.clickedId) {
+	            boundElement = symbolList[_i5].getBoundElement();
 	            bBox = boundElement.getBBox();
 	            x1 = bBox.x;
 	            x2 = bBox.x2;

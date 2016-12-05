@@ -468,19 +468,27 @@ module.exports = function (dep) {
 
       instance.globalReactiveModel.onPropsChange(['x-axis-visible-range-start', 'x-axis-visible-range-end'], propsHandler);
       function propsHandler (start, end, flag) {
-        if (instance.currentCategory === 'calculated') {
+        if (instance.currentCategory === 'contextual') {
+          if (instance.endActiveWindow === instance.endDataset) {
+            for (let i = 0; i < instance.standardContexualPeriods.length; i++) {
+              if ((instance.standardContexualPeriods[i].dateEnd - instance.standardContexualPeriods[i].dateStart) >= (end[1] - start[1])) {
+                instance.clickedId = instance.standardContexualPeriods[i].abbreviation;
+              }
+            }
+          } else {
+            for (let i = 0; i < instance.standardCalculatedPeriods.length; i++) {
+              for (let j = 0; j < instance.standardCalculatedPeriods[i].multipliers.length; j++) {
+                if ((end[1] - start[1]) >= instance.standardCalculatedPeriods[i].multipliers[j] * instance.standardCalculatedPeriods[i].milliseconds) {
+                  instance.clickedId = instance.standardCalculatedPeriods[i].multipliers[j] + instance.standardCalculatedPeriods[i].abbreviation;
+                }
+              }
+            }
+          }
+        } else if (instance.currentCategory === 'calculated') {
           for (let i = 0; i < instance.standardCalculatedPeriods.length; i++) {
             for (let j = 0; j < instance.standardCalculatedPeriods[i].multipliers.length; j++) {
               if ((end[1] - start[1]) >= instance.standardCalculatedPeriods[i].multipliers[j] * instance.standardCalculatedPeriods[i].milliseconds) {
                 instance.clickedId = instance.standardCalculatedPeriods[i].multipliers[j] + instance.standardCalculatedPeriods[i].abbreviation;
-              }
-            }
-          }
-        } else if (instance.currentCategory === 'contextual') {
-          if (instance.endActiveWindow === instance.endDataset) {
-            for (let i = 0; i < instance.standardContexualPeriods.length; i++) {
-              if ((instance.standardContexualPeriods.dateEnd - instance.standardContexualPeriods.dateStart) <= (end[1] - start[1])) {
-                instance.clickedId = instance.standardContexualPeriods[i].abbreviation;
               }
             }
           }
