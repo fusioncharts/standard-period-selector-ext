@@ -219,11 +219,11 @@
 	    }, {
 	      key: 'showApplicableCalculatedButtons',
 	      value: function showApplicableCalculatedButtons() {
-	        var targetBlock = this.endActiveWindow - this.startDataset,
+	        var self = this,
+	            targetBlock = this.endActiveWindow - this.startDataset,
 	            i = 0,
 	            j = 0,
 	            activeWindow = this.endActiveWindow - this.startActiveWindow,
-	            self = this,
 	            key,
 	            calculatedObj = self.btns.calculatedObj;
 
@@ -253,7 +253,7 @@
 	              });
 	              // calculating and populating the applicable multpliers of each unit
 	              for (j = 0; j < self.timePeriods[i].multipliers.length; j++) {
-	                if (activeWindow / self.ratio < self.timePeriods[i].multipliers[j] * self.timePeriods[i].interval && self.timePeriods[i].multipliers[j] * self.timePeriods[i].interval > self.minimumBucket) {
+	                if (activeWindow / self.ratio < self.timePeriods[i].multipliers[j] * self.timePeriods[i].interval && self.timePeriods[i].multipliers[j] * self.timePeriods[i].interval > self.minimumBucket && self.timePeriods[i].multipliers[j] * self.timePeriods[i].interval <= targetBlock) {
 	                  self.standardCalculatedPeriods[self.standardCalculatedPeriods.length - 1].multipliers.push(self.timePeriods[i].multipliers[j]);
 	                }
 	              }
