@@ -27,7 +27,8 @@ module.exports = function (dep) {
       self.startPointUnit = 0;
       self.startPointMultiplier = 0;
       self.noCalcButtons = 0;
-      self.minimumBucket = 5184000000;
+      self.minimumBucket = 1;
+      self.buttonGroup = {};
       self.toolbar = {};
       self.categoryClicked;
       self.btns = {
@@ -127,57 +128,67 @@ module.exports = function (dep) {
 
     showApplicableCalculatedButtons () {
       var self = this,
-        targetBlock = this.endActiveWindow - this.startDataset,
+        targetBlock,
         i = 0,
         j = 0,
-        activeWindow = this.endActiveWindow - this.startActiveWindow,
+        activeWindow = self.endActiveWindow - self.startActiveWindow,
         key,
-        calculatedObj = self.btns.calculatedObj;
+        anchorPositions = self.anchorPositions,
+        calculatedObj = self.btns.calculatedObj,
+        timePeriods = self.timePeriods,
+        interval = 0,
+        name,
+        abbreviation,
+        standardCalculatedPeriods = [],
+        minimumBucket = self.minimumBucket;
+
+      if (anchorPositions === 'right') {
+        targetBlock = self.endActiveWindow - self.startDataset;
+      } else {
+        targetBlock = self.endDataset - self.startActiveWindow;
+      }
 
       self.hideAllCalcBtns();
-      self.standardCalculatedPeriods = [];
-      for (i = 0; i < self.timePeriods.length; i++) {
+      for (i = 0; i < timePeriods.length; i++) {
+        interval = timePeriods[i].interval;
+        name = timePeriods[i].name;
+        abbreviation = timePeriods[i].abbreviation.single;
         // checking whether the unit is applicable for the current target block
-        if (targetBlock / self.timePeriods[i].interval >= 1) {
+        if (targetBlock / interval >= 1) {
           // checking whether the unit is of the higher order and only multiplier 1 is applicable
-          if (this.extData['default-select'] === '1' + self.timePeriods[i].abbreviation.single) {
-            this.clickedIdVal = self.timePeriods[i].interval;
-          }
-          if (Math.floor((activeWindow) / self.timePeriods[i].interval) < 1) {
-            // self.show('1' + self.timePeriods[i].abbreviation.single);
-            // self.calculatedObj['1' + self.timePeriods[i].abbreviation.single].show();
-            self.standardCalculatedPeriods.push({
-              'name': self.timePeriods[i].name,
-              'abbreviation': self.timePeriods[i].abbreviation.single,
+          if (Math.floor((activeWindow) / interval) < 1) {
+            standardCalculatedPeriods.push({
+              'name': name,
+              'abbreviation': abbreviation,
               'multipliers': [1]
             });
           } else { // if the unit is of the order of the target block and calculating the multipliers
-            self.standardCalculatedPeriods.push({
-              'name': self.timePeriods[i].name,
-              'abbreviation': self.timePeriods[i].abbreviation.single,
+            standardCalculatedPeriods.push({
+              'name': name,
+              'abbreviation': abbreviation,
               'multipliers': []
             });
             // calculating and populating the applicable multpliers of each unit
-            for (j = 0; j < self.timePeriods[i].multipliers.length; j++) {
-              if ((activeWindow / self.ratio < self.timePeriods[i].multipliers[j] * self.timePeriods[i].interval) &&
-                ((self.timePeriods[i].multipliers[j] * self.timePeriods[i].interval) > self.minimumBucket) &&
-                (self.timePeriods[i].multipliers[j] * self.timePeriods[i].interval) <= targetBlock) {
-                self.standardCalculatedPeriods[self.standardCalculatedPeriods.length - 1].multipliers.push(
-                  self.timePeriods[i].multipliers[j]
-                  );
+            for (j = 0; j < timePeriods[i].multipliers.length; j++) {
+              if ((activeWindow / self.ratio < timePeriods[i].multipliers[j] * interval) &&
+                ((timePeriods[i].multipliers[j] * interval) > minimumBucket) &&
+                (timePeriods[i].multipliers[j] * interval) <= targetBlock) {
+                standardCalculatedPeriods[standardCalculatedPeriods.length - 1].multipliers.push(
+                  timePeriods[i].multipliers[j]);
               }
             }
           }
         }
       }
 
-      for (i = 0; i < self.standardCalculatedPeriods.length; i++) {
-        for (j = 0; j < self.standardCalculatedPeriods[i].multipliers.length; j++) {
-          key = self.standardCalculatedPeriods[i].multipliers[j] +
-            self.standardCalculatedPeriods[i].name;
+      for (i = 0; i < standardCalculatedPeriods.length; i++) {
+        for (j = 0; j < standardCalculatedPeriods[i].multipliers.length; j++) {
+          key = standardCalculatedPeriods[i].multipliers[j] +
+            standardCalculatedPeriods[i].name;
           calculatedObj[key].btn && calculatedObj[key].btn.show();
         }
       }
+      self.standardCalculatedPeriods = standardCalculatedPeriods;
       self.toolbar && self.toolbar.redraw();
     }
 
@@ -314,35 +325,42 @@ module.exports = function (dep) {
       var self = this,
         btnCalc,
         calculatedObj = self.btns.calculatedObj,
-        btnObj;
+        btnObj,
+        anchorPositions = self.anchorPositions,
+        minimumBucket = this.minimumBucket;
       for (let i = self.timePeriods.length - 1; i >= 0; i--) {
         for (let j = self.timePeriods[i].multipliers.length - 1; j >= 0; j--) {
           let keyAbb = self.timePeriods[i].multipliers[j] + self.timePeriods[i].abbreviation.single,
             keyName = self.timePeriods[i].multipliers[j] + self.timePeriods[i].name;
           let interval = (self.timePeriods[i].multipliers[j] * self.timePeriods[i].interval);
-          btnObj = calculatedObj[keyName] = {
-            interval: interval,
-            fn: function () {
-              self.clickedId = keyName;
-              self.categoryClicked = 'calculated';
-              self.heighlightActiveRange();
-              self.globalReactiveModel.model['x-axis-visible-range-start'] = self.endActiveWindow - interval;
-            },
-            shortKey: keyAbb
-          };
+          if (interval > minimumBucket) {
+            btnObj = calculatedObj[keyName] = {
+              interval: interval,
+              fn: function () {
+                self.clickedId = keyName;
+                self.categoryClicked = 'calculated';
+                self.heighlightActiveRange();
+                if (anchorPositions === 'right') {
+                  self.globalReactiveModel.model['x-axis-visible-range-start'] = self.endActiveWindow - interval;
+                } else {
+                  self.globalReactiveModel.model['x-axis-visible-range-end'] = self.startActiveWindow + interval;
+                }
+              },
+              shortKey: keyAbb
+            };
 
-          btnCalc = new this.toolbox.Symbol(keyAbb, true, {
-            paper: this.graphics.paper,
-            chart: this.chart,
-            smartLabel: this.smartLabel,
-            chartContainer: this.graphics.container
-          }, self.extData.style['calculated-config']).attachEventHandlers({
-            'click': btnObj.fn,
-            tooltext: self.timePeriods[i].multipliers[j] + ' ' + self.timePeriods[i].description
-          });
-          btnObj.btn = btnCalc;
-          buttonGroup.addSymbol(btnCalc);
-          // calculatedButtons.hide();
+            btnCalc = new this.toolbox.Symbol(keyAbb, true, {
+              paper: this.graphics.paper,
+              chart: this.chart,
+              smartLabel: this.smartLabel,
+              chartContainer: this.graphics.container
+            }, self.extData.style['calculated-config']).attachEventHandlers({
+              'click': btnObj.fn,
+              tooltext: self.timePeriods[i].multipliers[j] + ' ' + self.timePeriods[i].description
+            });
+            btnObj.btn = btnCalc;
+            buttonGroup.addSymbol(btnCalc);
+          }
         }
       }
     }
@@ -501,10 +519,10 @@ module.exports = function (dep) {
 
     // creates toolbar
     createToolbar () {
-      var buttonGroup,
-        toolbar = this.toolbar,
+      var self = this,
+        buttonGroup,
+        toolbar,
         allButton,
-        self = this,
         fromDateLabel,
         group;
 
@@ -577,15 +595,16 @@ module.exports = function (dep) {
       buttonGroup.addSymbol(allButton.btn);
 
       // create all calculated button
-      self.createCalculatedButtons(buttonGroup);
+      // self.createCalculatedButtons(buttonGroup);
 
       // create all contextual button
-      self.createContextualButtons(buttonGroup);
+      // self.createContextualButtons(buttonGroup);
 
       // adding group and button group to toolbar
       toolbar.addComponent(group);
       toolbar.addComponent(buttonGroup);
       this.toolbar = toolbar;
+      this.buttonGroup = buttonGroup;
       return toolbar;
     };
 
@@ -646,7 +665,8 @@ module.exports = function (dep) {
       instance.timePeriods = instance.processMultipliers(instance.timeRules);
       instance.extData = {
         'disabled': 'false',
-        // 'default-select': 'ALL',
+        'default-select': 'ALL',
+        'anchor-align': 'left',
         'posWrtCanvas': 'top',
         'layout': 'inline',
         'alignment': 'left',
@@ -761,6 +781,7 @@ module.exports = function (dep) {
         }
       };
       Object.assign(instance.extData, instance.extDataUser);
+      instance.anchorPositions = instance.extData['anchor-align'];
       instance.customMultipliers = instance.extData.customMultipliers || {
         'millisecond': [1, 500],
         'second': [1, 5, 15, 30],
@@ -788,13 +809,14 @@ module.exports = function (dep) {
       }
 
       // instance.setActivePeriod(instance.startActiveWindow, instance.endActiveWindow);
-      instance.toolbars = [];
       instance.measurement = {};
       instance.flag = true;
+      instance.toolbars = [];
 
       instance.toolbars.push(instance.createToolbar());
 
-      instance.globalReactiveModel.onPropsChange(['x-axis-visible-range-start', 'x-axis-visible-range-end'], instance.propsChangeListener);
+      instance.globalReactiveModel.onPropsChange(['x-axis-visible-range-start', 'x-axis-visible-range-end'],
+        instance.propsChangeListener);
       return instance;
     };
 
@@ -804,16 +826,17 @@ module.exports = function (dep) {
         width = 420, // width hardcoded; TODO: make it dynamic
         height = 0,
         i,
-        ln;
+        ln,
+        self = this;
 
-      for (i = 0, ln = this.toolbars.length; i < ln; i++) {
-        logicalSpace = this.toolbars[i].getLogicalSpace(availableWidth, availableHeight);
+      for (i = 0, ln = self.toolbars.length; i < ln; i++) {
+        logicalSpace = self.toolbars[i].getLogicalSpace(availableWidth, availableHeight);
         // width = Math.max(logicalSpace.width, width);
         height += logicalSpace.height;
-        this.toolbars[i].width = logicalSpace.width;
-        this.toolbars[i].height = logicalSpace.height;
+        self.toolbars[i].width = logicalSpace.width;
+        self.toolbars[i].height = logicalSpace.height;
       }
-      height += this.padding;
+      height += self.padding;
       return {
         width: width,
         height: height
@@ -889,7 +912,19 @@ module.exports = function (dep) {
         contextualObj = self.btns.contextualObj,
         calculatedObj = self.btns.calculatedObj,
         clickedId = self.clickedId,
-        activeBtn;
+        activeBtn,
+        model = self.globalReactiveModel.model,
+        minimumBucket = self.minimumBucket,
+        buttonGroup = self.buttonGroup;
+
+      minimumBucket = model['minimum-consecutive-datestamp-diff'] * model['x-axis-maximum-allowed-ticks'];
+      self.minimumBucket = minimumBucket;
+      // create all calculated button
+      self.createCalculatedButtons(buttonGroup);
+
+      // create all contextual button
+      self.createContextualButtons(buttonGroup);
+
       x = x === undefined ? measurement.x : x;
       y = y === undefined ? measurement.y : y;
       width = width === undefined ? measurement.width : width;
@@ -912,9 +947,6 @@ module.exports = function (dep) {
       } else {
         self.onActiveRangeChange();
       }
-
-      this.minimumBucket = this.globalReactiveModel.model['minimum-consecutive-datestamp-diff'] *
-        this.globalReactiveModel.model['x-axis-maximum-allowed-ticks'];
     };
   }
   return StandardPeriodSelector;
