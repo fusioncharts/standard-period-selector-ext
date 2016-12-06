@@ -264,7 +264,7 @@
 	              });
 	              // calculating and populating the applicable multpliers of each unit
 	              for (j = 0; j < timePeriods[i].multipliers.length; j++) {
-	                if (activeWindow / self.ratio < timePeriods[i].multipliers[j] * interval && timePeriods[i].multipliers[j] * interval > minimumBucket && timePeriods[i].multipliers[j] * interval <= targetBlock) {
+	                if (activeWindow / self.ratio < timePeriods[i].multipliers[j] * interval && timePeriods[i].multipliers[j] * interval > minimumBucket) {
 	                  standardCalculatedPeriods[standardCalculatedPeriods.length - 1].multipliers.push(timePeriods[i].multipliers[j]);
 	                }
 	              }
@@ -425,7 +425,8 @@
 	            calculatedObj = self.btns.calculatedObj,
 	            btnObj,
 	            anchorPositions = self.anchorPositions,
-	            minimumBucket = this.minimumBucket;
+	            minimumBucket = this.minimumBucket,
+	            model = self.globalReactiveModel.model;
 	        for (var i = self.timePeriods.length - 1; i >= 0; i--) {
 	          var _loop = function _loop(j) {
 	            var keyAbb = self.timePeriods[i].multipliers[j] + self.timePeriods[i].abbreviation.single,
@@ -439,9 +440,23 @@
 	                  self.categoryClicked = 'calculated';
 	                  self.heighlightActiveRange();
 	                  if (anchorPositions === 'right') {
-	                    self.globalReactiveModel.model['x-axis-visible-range-start'] = self.endActiveWindow - interval;
+	                    if (model['x-axis-absolute-range-start'] > self.endActiveWindow - interval) {
+	                      // model['x-axis-visible-range-start'] = model['x-axis-absolute-range-start'];
+	                      // model['x-axis-visible-range-end'] = model['x-axis-visible-range-start'] + interval;
+	                      // interval = model['x-axis-visible-range-start'] + interval;
+	                      self.globalReactiveModel.lock().prop('x-axis-absolute-range-start', self.startDataset).prop('x-axis-visible-range-end', model['x-axis-visible-range-start'] + interval).unlock();
+	                    } else {
+	                      model['x-axis-visible-range-start'] = self.endActiveWindow - interval;
+	                    }
 	                  } else {
-	                    self.globalReactiveModel.model['x-axis-visible-range-end'] = self.startActiveWindow + interval;
+	                    if (model['x-axis-visible-range-end'] < self.startActiveWindow + interval) {
+	                      // model['x-axis-visible-range-end'] = model['x-axis-absolute-range-end'];
+	                      // model['x-axis-visible-range-start'] = model['x-axis-absolute-range-end'] - interval;
+	                      // interval = model['x-axis-absolute-range-end'] - interval;
+	                      self.globalReactiveModel.lock().prop('x-axis-absolute-range-end', self.endDataset).prop('x-axis-visible-range-start', model['x-axis-absolute-range-end'] - interval).unlock();
+	                    } else {
+	                      model['x-axis-visible-range-end'] = self.startActiveWindow + interval;
+	                    }
 	                  }
 	                },
 	                shortKey: keyAbb
@@ -900,10 +915,15 @@
 	        instance.measurement = {};
 	        instance.flag = true;
 	        instance.toolbars = [];
-
 	        instance.toolbars.push(instance.createToolbar());
 
 	        instance.globalReactiveModel.onPropsChange(['x-axis-visible-range-start', 'x-axis-visible-range-end'], instance.propsChangeListener);
+	        instance.globalReactiveModel.onPropChange('x-axis-absolute-range-end', function (absEnd) {
+	          if (instance.categoryClicked === 'contextual') {
+	            instance.globalReactiveModel.model['x-axis-visible-range-end'] = instance.globalReactiveModel.model['x-axis-absolute-range-end'];
+	          }
+	        });
+
 	        return instance;
 	      }
 	    }, {
