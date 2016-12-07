@@ -412,10 +412,6 @@ module.exports = function (dep) {
       }
     }
 
-    /**
-     * A function to generate the contextual buttons using
-     * the end point of the time-scale
-     */
     generateCtxBtnList () {
       // generating an array with applicable TD buttons
       var buttons = [],
@@ -656,9 +652,6 @@ module.exports = function (dep) {
 
     // *********** Extension interface methods *********//
 
-      /**
-     * Fusioncharts life cycle method for extension
-     */
     init (require) {
       var instance = this,
         calculatedObj = instance.btns.calculatedObj,
