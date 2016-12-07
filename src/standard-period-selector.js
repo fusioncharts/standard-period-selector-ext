@@ -1,11 +1,42 @@
 'use strict';
-
 /**
  * Class definition of StandardPeriodSelector
  */
 
 module.exports = function (dep) {
   class StandardPeriodSelector {
+    /**
+     *In time series charts, it is required to have some
+     *optional UI buttons / options to select the visible
+     *canvas range to a standard time period like
+     *1 month, 1 year, 5 years, 3 months,  YTD etc.
+     *Also, from the same UI it should have an option
+     *to select the full date-time range.
+     *
+     *The configuration object for the extension is as follows:
+     *
+     *@example
+     *datasource: {
+     *  extension: {
+     *     'standard-period-selector': {
+     *       'disabled': 'false',
+     *       'default-select': 'ALL',
+     *       'posWrtCanvas': 'top',
+     *       'anchor-align': 'left',
+     *       'layout': 'inline',
+     *       'alignment': 'left',
+     *       'orientation': 'horizontal',
+     *     }
+     *   }
+     *}
+     *
+     *The extension provides an optional tool (UI buttons)
+     *for the user to select various popular standard time periods
+     *like 1 week, 1 month, 3 month, 1 year, 5 year, YTD, QTD,
+     *MTD, DTT, All etc.
+     *
+     */
+
     constructor () {
       /**
        * @private
@@ -110,12 +141,6 @@ module.exports = function (dep) {
         }
       };
     }
-
-    // ****** Make btns visible ******* /
-    /**
-     * A function to generate the calculated buttons using
-     * the active range and the location of the active range
-     */
 
     hideAllCalcBtns () {
       var self = this,
@@ -457,8 +482,7 @@ module.exports = function (dep) {
     }
 
     createContextualButtons (buttonGroup) {
-      var contextualButtons = [],
-        self = this,
+      var self = this,
         contextualConfig,
         contextualObj = self.btns.contextualObj,
         btnObj,
