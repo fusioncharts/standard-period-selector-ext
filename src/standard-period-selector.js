@@ -144,7 +144,7 @@ module.exports = function (dep) {
 
       if (anchorPositions === 'right') {
         targetBlock = self.endActiveWindow - self.startDataset;
-      } else {
+      } else if (anchorPositions === 'left') {
         targetBlock = self.endDataset - self.startActiveWindow;
       }
 
@@ -348,19 +348,19 @@ module.exports = function (dep) {
                     self.globalReactiveModel
                       .lock()
                       .prop('x-axis-visible-range-end', model['x-axis-visible-range-start'] + interval)
-                      .prop('x-axis-absolute-range-start', self.startDataset)
+                      .prop('x-axis-visible-range-start', self.startDataset)
                       .unlock();
                   } else {
                     model['x-axis-visible-range-start'] = self.endActiveWindow - interval;
                   }
                 } else {
-                  if (model['x-axis-visible-range-end'] < self.startActiveWindow + interval) {
+                  if (model['x-axis-absolute-range-end'] < self.startActiveWindow + interval) {
                     // model['x-axis-visible-range-end'] = model['x-axis-absolute-range-end'];
                     // model['x-axis-visible-range-start'] = model['x-axis-absolute-range-end'] - interval;
                     // interval = model['x-axis-absolute-range-end'] - interval;
                     self.globalReactiveModel
                       .lock()
-                      .prop('x-axis-absolute-range-end', self.endDataset)
+                      .prop('x-axis-visible-range-end', self.endDataset)
                       .prop('x-axis-visible-range-start', model['x-axis-absolute-range-end'] - interval)
                       .unlock();
                   } else {
