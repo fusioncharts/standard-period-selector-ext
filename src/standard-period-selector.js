@@ -13,6 +13,11 @@ module.exports = function (dep) {
      *Also, from the same UI it should have an option
      *to select the full date-time range.
      *
+     *The extension provides an optional tool (UI buttons)
+     *for the user to select various popular standard time periods
+     *like 1 week, 1 month, 3 month, 1 year, 5 year, YTD, QTD,
+     *MTD, DTT, All etc.
+     *
      *The configuration object for the extension is as follows:
      *
      *@example
@@ -30,10 +35,6 @@ module.exports = function (dep) {
      *   }
      *}
      *
-     *The extension provides an optional tool (UI buttons)
-     *for the user to select various popular standard time periods
-     *like 1 week, 1 month, 3 month, 1 year, 5 year, YTD, QTD,
-     *MTD, DTT, All etc.
      *
      */
 
