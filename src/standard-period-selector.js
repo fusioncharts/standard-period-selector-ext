@@ -347,8 +347,8 @@ module.exports = function (dep) {
                     // interval = model['x-axis-visible-range-start'] + interval;
                     self.globalReactiveModel
                       .lock()
-                      .prop('x-axis-absolute-range-start', self.startDataset)
                       .prop('x-axis-visible-range-end', model['x-axis-visible-range-start'] + interval)
+                      .prop('x-axis-absolute-range-start', self.startDataset)
                       .unlock();
                   } else {
                     model['x-axis-visible-range-start'] = self.endActiveWindow - interval;
@@ -516,8 +516,8 @@ module.exports = function (dep) {
             self.heighlightActiveRange();
             self.globalReactiveModel
               .lock()
-              .prop('x-axis-visible-range-start', self.standardContexualPeriods[i].dateStart)
               .prop('x-axis-visible-range-end', self.standardContexualPeriods[i].dateEnd)
+              .prop('x-axis-visible-range-start', self.standardContexualPeriods[i].dateStart)
               .unlock();
           }
         };
@@ -598,8 +598,8 @@ module.exports = function (dep) {
         self.heighlightActiveRange();
         self.globalReactiveModel
           .lock()
-          .prop('x-axis-visible-range-start', self.startDataset)
           .prop('x-axis-visible-range-end', self.endDataset)
+          .prop('x-axis-visible-range-start', self.startDataset)
           .unlock();
       }};
       allButton.btn = new this.toolbox.Symbol('ALL', true, {

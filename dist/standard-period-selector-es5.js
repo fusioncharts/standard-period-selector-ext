@@ -444,7 +444,7 @@
 	                      // model['x-axis-visible-range-start'] = model['x-axis-absolute-range-start'];
 	                      // model['x-axis-visible-range-end'] = model['x-axis-visible-range-start'] + interval;
 	                      // interval = model['x-axis-visible-range-start'] + interval;
-	                      self.globalReactiveModel.lock().prop('x-axis-absolute-range-start', self.startDataset).prop('x-axis-visible-range-end', model['x-axis-visible-range-start'] + interval).unlock();
+	                      self.globalReactiveModel.lock().prop('x-axis-visible-range-end', model['x-axis-visible-range-start'] + interval).prop('x-axis-absolute-range-start', self.startDataset).unlock();
 	                    } else {
 	                      model['x-axis-visible-range-start'] = self.endActiveWindow - interval;
 	                    }
@@ -616,7 +616,7 @@
 	              self.categoryClicked = 'contextual';
 	              self.clickedId = self.standardContexualPeriods[i].abbreviation;
 	              self.heighlightActiveRange();
-	              self.globalReactiveModel.lock().prop('x-axis-visible-range-start', self.standardContexualPeriods[i].dateStart).prop('x-axis-visible-range-end', self.standardContexualPeriods[i].dateEnd).unlock();
+	              self.globalReactiveModel.lock().prop('x-axis-visible-range-end', self.standardContexualPeriods[i].dateEnd).prop('x-axis-visible-range-start', self.standardContexualPeriods[i].dateStart).unlock();
 	            }
 	          };
 
@@ -700,7 +700,7 @@
 	            self.clickedId = 'ALL';
 	            self.categoryClicked = 'ALL';
 	            self.heighlightActiveRange();
-	            self.globalReactiveModel.lock().prop('x-axis-visible-range-start', self.startDataset).prop('x-axis-visible-range-end', self.endDataset).unlock();
+	            self.globalReactiveModel.lock().prop('x-axis-visible-range-end', self.endDataset).prop('x-axis-visible-range-start', self.startDataset).unlock();
 	          } };
 	        allButton.btn = new this.toolbox.Symbol('ALL', true, {
 	          paper: this.graphics.paper,
