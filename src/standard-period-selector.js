@@ -219,7 +219,7 @@ module.exports = function (dep) {
 
     // ******** React on active property change ****
 
-    heighlightActiveRange () {
+    highlightActiveRange () {
       // first check w.r.t contextual btns then others
       var self = this,
         selectLine = self.saveSelectLine,
@@ -317,7 +317,7 @@ module.exports = function (dep) {
       }
 
       self.showApplicableCalculatedButtons();
-      self.heighlightActiveRange();
+      self.highlightActiveRange();
     }
 
     // *********** Drzaw the btns initialy ***** //
@@ -367,7 +367,7 @@ module.exports = function (dep) {
               fn: function () {
                 self.clickedId = keyName;
                 self.categoryClicked = 'calculated';
-                self.heighlightActiveRange();
+                self.highlightActiveRange();
                 if (anchorPositions === 'right') {
                   if (model['x-axis-absolute-range-start'] > self.endActiveWindow - interval) {
                     // model['x-axis-visible-range-start'] = model['x-axis-absolute-range-start'];
@@ -501,7 +501,7 @@ module.exports = function (dep) {
           fn: function () {
             self.categoryClicked = 'contextual';
             self.clickedId = self.standardContexualPeriods[i].abbreviation;
-            self.heighlightActiveRange();
+            self.highlightActiveRange();
             self.globalReactiveModel
               .lock()
               .prop('x-axis-visible-range-end', self.standardContexualPeriods[i].dateEnd)
@@ -580,29 +580,31 @@ module.exports = function (dep) {
       group.addSymbol(fromDateLabel);
 
       // 'ALL' button created
-      allButton = {fn: function () {
+      allButton = self.allButtonShow && {fn: function () {
         self.clickedId = 'ALL';
         self.categoryClicked = 'ALL';
-        self.heighlightActiveRange();
+        self.highlightActiveRange();
         self.globalReactiveModel
           .lock()
           .prop('x-axis-visible-range-end', self.endDataset)
           .prop('x-axis-visible-range-start', self.startDataset)
           .unlock();
       }};
-      allButton.btn = new self.toolbox.Symbol('ALL', true, {
-        paper: self.graphics.paper,
-        chart: self.chart,
-        smartLabel: self.smartLabel,
-        chartContainer: self.graphics.container
-      }, self.extData.style['all-config']).attachEventHandlers({
-        click: allButton.fn,
-        tooltext: 'ALL'
-      });
+      if (allButton) {
+        allButton.btn = new self.toolbox.Symbol('ALL', true, {
+          paper: self.graphics.paper,
+          chart: self.chart,
+          smartLabel: self.smartLabel,
+          chartContainer: self.graphics.container
+        }, self.extData.style['all-config']).attachEventHandlers({
+          click: allButton.fn,
+          tooltext: 'ALL'
+        });
 
-      self.btns['ALL'] = allButton;
+        self.btns['ALL'] = allButton;
 
-      buttonGroup.addSymbol(allButton.btn);
+        buttonGroup.addSymbol(allButton.btn);
+      };
 
       // create all calculated button
       // self.createCalculatedButtons(buttonGroup);
@@ -673,6 +675,9 @@ module.exports = function (dep) {
       instance.extData = {
         'disabled': 'false',
         'default-select': 'ALL',
+        'all-button': true,
+        'contextual-button': true,
+        'calculated-button': true,
         'anchor-align': 'left',
         'posWrtCanvas': 'top',
         'layout': 'inline',
@@ -788,6 +793,9 @@ module.exports = function (dep) {
         }
       };
       Object.assign(instance.extData, instance.extDataUser);
+      instance.allButtonShow = instance.extData['all-button'];
+      instance.calculatedButtonShow = instance.extData['calculated-button'];
+      instance.contextualButtonShow = instance.extData['contextual-button'];
       instance.anchorPositions = instance.extData['anchor-align'];
       instance.customMultipliers = instance.extData.customMultipliers || {
         'millisecond': [1, 500],
@@ -931,11 +939,16 @@ module.exports = function (dep) {
 
       minimumBucket = model['minimum-consecutive-datestamp-diff'] * model['x-axis-maximum-allowed-ticks'];
       self.minimumBucket = minimumBucket;
+
+        // 'all-button': true,
+        // 'contextual-button': true,
+        // 'calculated-button': true,
+
       // create all calculated button
-      self.createCalculatedButtons(buttonGroup);
+      self.calculatedButtonShow && self.createCalculatedButtons(buttonGroup);
 
       // create all contextual button
-      self.createContextualButtons(buttonGroup);
+      self.contextualButtonShow && self.createContextualButtons(buttonGroup);
 
       x = x === undefined ? measurement.x : x;
       y = y === undefined ? measurement.y : y;
