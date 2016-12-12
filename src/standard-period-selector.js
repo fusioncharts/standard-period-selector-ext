@@ -532,7 +532,8 @@ module.exports = function (dep) {
         toolbar,
         allButton,
         fromDateLabel,
-        group;
+        group,
+        dummyButtonGroup;
 
       // initiating the toolbar
       toolbar = new self.HorizontalToolbar({
@@ -561,6 +562,20 @@ module.exports = function (dep) {
         smartLabel: self.smartLabel,
         chartContainer: self.graphics.container
       });
+
+      // making buttonGroup for the buttons
+      dummyButtonGroup = new self.toolbox.ComponentGroup({
+        paper: self.graphics.paper,
+        chart: self.chart,
+        smartLabel: self.smartLabel,
+        chartContainer: self.graphics.container
+      });
+
+      dummyButtonGroup.setConfig({
+        fill: '#fff',
+        borderThickness: 0
+      });
+
       buttonGroup.setConfig({
         fill: '#fff',
         borderThickness: 0
@@ -610,9 +625,24 @@ module.exports = function (dep) {
       // create all contextual button
       // self.createContextualButtons(buttonGroup);
 
+      // adding dummyButton
+      for (let i = 0; i < 8; i++) {
+        dummyButtonGroup.addSymbol(new self.toolbox.Symbol('ALL', true, {
+          paper: self.graphics.paper,
+          chart: self.chart,
+          smartLabel: self.smartLabel,
+          chartContainer: self.graphics.container
+        }, self.extData.style['all-config']).attachEventHandlers({
+          click: allButton.fn,
+          tooltext: '___'
+        }));
+      }
+      self.dummyButtonGroup = dummyButtonGroup;
+
       // adding group and button group to toolbar
       toolbar.addComponent(group);
       toolbar.addComponent(buttonGroup);
+      toolbar.addComponent(dummyButtonGroup);
       self.toolbar = toolbar;
       self.buttonGroup = buttonGroup;
       return toolbar;
@@ -833,7 +863,7 @@ module.exports = function (dep) {
     getLogicalSpace (availableWidth = this._pWidth, availableHeight = this._pHeight) {
       // availableWidth /= 2;
       var logicalSpace,
-        width = 420, // width hardcoded; TODO: make it dynamic
+        width = 1, // width hardcoded; TODO: make it dynamic
         height = 0,
         i,
         ln,
@@ -841,7 +871,8 @@ module.exports = function (dep) {
 
       for (i = 0, ln = self.toolbars.length; i < ln; i++) {
         logicalSpace = self.toolbars[i].getLogicalSpace(availableWidth, availableHeight);
-        // width = Math.max(logicalSpace.width, width);
+        console.log('logical space', logicalSpace);
+        width = Math.max(logicalSpace.width, width);
         height += logicalSpace.height;
         self.toolbars[i].width = logicalSpace.width;
         self.toolbars[i].height = logicalSpace.height;
@@ -934,6 +965,7 @@ module.exports = function (dep) {
         // 'contextual-button': true,
         // 'calculated-button': true,
 
+      self.dummyButtonGroup.dispose();
       // create all calculated button
       self.calculatedButtonShow && self.createCalculatedButtons(buttonGroup);
 
