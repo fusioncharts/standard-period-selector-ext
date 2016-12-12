@@ -13,12 +13,11 @@ module.exports = function (dep) {
      *Also, from the same UI it should have an option
      *to select the full date-time range.
      *
+     *The configuration object for the extension is as follows:
      *The extension provides an optional tool (UI buttons)
      *for the user to select various popular standard time periods
      *like 1 week, 1 month, 3 month, 1 year, 5 year, YTD, QTD,
      *MTD, DTT, All etc.
-     *
-     *The configuration object for the extension is as follows:
      *
      *@example
      *datasource: {
@@ -143,6 +142,7 @@ module.exports = function (dep) {
       };
     }
 
+    // --test case made--
     hideAllCalcBtns () {
       var self = this,
         calculatedObj = self.btns.calculatedObj,
@@ -221,27 +221,27 @@ module.exports = function (dep) {
 
     heighlightActiveRange () {
       // first check w.r.t contextual btns then others
-      var sps = this,
-        selectLine = sps.saveSelectLine,
+      var self = this,
+        selectLine = self.saveSelectLine,
         boundElement,
-        clickedId = sps.clickedId,
+        clickedId = self.clickedId,
         bBox,
         x1,
         x2,
         y2,
         activeBtn,
-        contextualObj = sps.btns.contextualObj,
-        calculatedObj = sps.btns.calculatedObj;
+        contextualObj = self.btns.contextualObj,
+        calculatedObj = self.btns.calculatedObj;
 
       // if the heighliter is not createcd create it
       if (!selectLine) {
-        selectLine = sps.saveSelectLine || (sps.saveSelectLine = sps.graphics.paper.path({
+        selectLine = self.saveSelectLine || (self.saveSelectLine = self.graphics.paper.path({
           'stroke': '#c95a5a',
           'stroke-width': '2px'
         }).toFront());
       }
 
-      activeBtn = contextualObj[clickedId] || calculatedObj[clickedId] || sps.btns[clickedId];
+      activeBtn = contextualObj[clickedId] || calculatedObj[clickedId] || self.btns[clickedId];
 
       if (activeBtn) {
         boundElement = activeBtn.btn.svgElems.node;
@@ -257,6 +257,7 @@ module.exports = function (dep) {
       }
     }
 
+    // --test case made--
     onActiveRangeChange () {
       var self = this,
         x,
@@ -321,6 +322,7 @@ module.exports = function (dep) {
 
     // *********** Drzaw the btns initialy ***** //
 
+    // --test case made--
     // adds multipliers to the timerules object
     processMultipliers (timeArr) {
       var self = this;
@@ -413,69 +415,74 @@ module.exports = function (dep) {
       }
     }
 
+    // --test case made--
     generateCtxBtnList () {
       // generating an array with applicable TD buttons
-      var buttons = [],
+      var self = this,
+        buttons = self.standardContexualPeriods,
         i = 0,
-        endStamp = this.globalReactiveModel.model['x-axis-absolute-range-end'],
+        endStamp = self.globalReactiveModel.model['x-axis-absolute-range-end'] || 9999999,
         dateStart = endStamp - 2,
         dateEnd = endStamp,
-        relativeTDButton = {};
-      for (; i < this.tdButtons.length; i++) {
+        relativeTDButton = {},
+        tdButtons = self.tdButtons,
+        minimumBucket = self.minimumBucket || 1,
+        startActiveWindow = self.startActiveWindow,
+        endActiveWindow = self.endActiveWindow;
+
+      for (; i < tdButtons.length; i++) {
         dateStart = new Date(endStamp);
-        if (this.tdButtons[i].name === 'YTD') {
+        if (tdButtons[i].name === 'YTD') {
           dateStart.setMonth(0);
           dateStart.setDate(1);
           dateStart.setHours(0);
           dateStart.setMinutes(0);
           dateStart.setSeconds(0);
-        } else if (this.tdButtons[i].name === 'MTD') {
+        } else if (tdButtons[i].name === 'MTD') {
           dateStart.setDate(1);
           dateStart.setHours(0);
           dateStart.setMinutes(0);
           dateStart.setSeconds(0);
-        } else if (this.tdButtons[i].name === 'QTD') {
+        } else if (tdButtons[i].name === 'QTD') {
           dateStart.setMonth(11 - (dateStart.getMonth() % 4));
           dateStart.setDate(0);
           dateStart.setHours(0);
           dateStart.setMinutes(0);
           dateStart.setSeconds(0);
-        } else if (this.tdButtons[i].name === 'WTD') {
+        } else if (tdButtons[i].name === 'WTD') {
           dateStart.setDate(dateStart.getDate() - dateStart.getDay());
           dateStart.setHours(0);
           dateStart.setMinutes(0);
           dateStart.setSeconds(0);
-        } else if (this.tdButtons[i].name === 'Y') {
+        } else if (tdButtons[i].name === 'Y') {
           dateStart.setHours(0);
           dateStart.setMinutes(0);
           dateStart.setSeconds(0);
           dateStart -= 86400000;
-        } else if (this.tdButtons[i].name === 'T') {
+        } else if (tdButtons[i].name === 'T') {
           dateStart.setHours(0);
           dateStart.setMinutes(0);
           dateStart.setSeconds(0);
-          if (+this.endDataset === +dateStart) {
+          if (endStamp === +dateStart) {
             dateStart = +dateStart - 86400000;
           }
         }
 
-        if (dateEnd < dateStart && (dateEnd - dateStart) < this.minimumBucket) {
+        if (dateEnd < dateStart && (dateEnd - dateStart) < minimumBucket) {
           continue;
         } else {
-          this.tdButtons[i].dateStart = dateStart.valueOf();
-          this.tdButtons[i].dateEnd = dateEnd.valueOf();
-          buttons.push(this.tdButtons[i]);
+          tdButtons[i].dateStart = dateStart.valueOf();
+          tdButtons[i].dateEnd = dateEnd.valueOf();
+          buttons.push(tdButtons[i]);
         }
       }
       relativeTDButton.milliseconds = Infinity;
-      for (i = 0; i < this.tdButtons.length; i++) {
-        if (Math.abs(this.tdButtons[i].milliseconds - (this.endActiveWindow - this.startActiveWindow)) < relativeTDButton.milliseconds) {
-          relativeTDButton.milliseconds = this.tdButtons[i].milliseconds;
-          relativeTDButton.name = this.tdButtons[i].abbreviation;
+      for (i = 0; i < tdButtons.length; i++) {
+        if (Math.abs(tdButtons[i].milliseconds - (endActiveWindow - startActiveWindow)) < relativeTDButton.milliseconds) {
+          relativeTDButton.milliseconds = tdButtons[i].milliseconds;
+          relativeTDButton.name = tdButtons[i].abbreviation;
         }
       }
-
-      this.standardContexualPeriods = buttons;
     }
 
     createContextualButtons (buttonGroup) {
@@ -486,47 +493,7 @@ module.exports = function (dep) {
         keyName;
       self.generateCtxBtnList();
       for (let i = 0; i < this.standardContexualPeriods.length; i++) {
-        contextualConfig = (i === 0) ? self.extData.style['contextual-config-first'] || {
-          fill: '#ffffff',
-          labelFill: '#696969',
-          symbolStrokeWidth: '2',
-          stroke: '#ced5d4',
-          strokeWidth: '1',
-          height: 22,
-          hoverFill: '#ced5d4',
-          radius: 1,
-          margin: {
-            right: 0,
-            left: 5
-          },
-          btnTextStyle: {
-            'fontFamily': '"Lucida Grande", sans-serif',
-            'fontSize': '13',
-            'fill': '#696969',
-            'line-height': '1',
-            'letter-spacing': '-0.04em'
-          }
-        } : self.extData.style['contextual-config'] || {
-          fill: '#ffffff',
-          labelFill: '#696969',
-          symbolStrokeWidth: '2',
-          stroke: '#ced5d4',
-          strokeWidth: '1',
-          height: 22,
-          hoverFill: '#ced5d4',
-          radius: 1,
-          margin: {
-            right: 0,
-            left: 0
-          },
-          btnTextStyle: {
-            'fontFamily': '"Lucida Grande", sans-serif',
-            'fontSize': '13',
-            'fill': '#696969',
-            'line-height': '1',
-            'letter-spacing': '-0.04em'
-          }
-        };
+        contextualConfig = (i === 0) ? self.extData.style['contextual-config-first'] : self.extData.style['contextual-config'];
         keyName = this.standardContexualPeriods[i].abbreviation;
         btnObj = contextualObj[keyName] = {
           contextStart: self.standardContexualPeriods[i].dateStart,
@@ -570,11 +537,11 @@ module.exports = function (dep) {
         group;
 
       // initiating the toolbar
-      toolbar = new this.HorizontalToolbar({
-        paper: this.graphics.paper,
-        chart: this.chart,
-        smartLabel: this.smartLabel,
-        chartContainer: this.graphics.container
+      toolbar = new self.HorizontalToolbar({
+        paper: self.graphics.paper,
+        chart: self.chart,
+        smartLabel: self.smartLabel,
+        chartContainer: self.graphics.container
       });
       toolbar.setConfig({
         fill: '#fff',
@@ -582,19 +549,19 @@ module.exports = function (dep) {
       });
 
       // making group for the extension label
-      group = new this.toolbox.ComponentGroup({
-        paper: this.graphics.paper,
-        chart: this.chart,
-        smartLabel: this.smartLabel,
-        chartContainer: this.graphics.container
+      group = new self.toolbox.ComponentGroup({
+        paper: self.graphics.paper,
+        chart: self.chart,
+        smartLabel: self.smartLabel,
+        chartContainer: self.graphics.container
       });
 
       // making buttonGroup for the buttons
-      buttonGroup = new this.toolbox.ComponentGroup({
-        paper: this.graphics.paper,
-        chart: this.chart,
-        smartLabel: this.smartLabel,
-        chartContainer: this.graphics.container
+      buttonGroup = new self.toolbox.ComponentGroup({
+        paper: self.graphics.paper,
+        chart: self.chart,
+        smartLabel: self.smartLabel,
+        chartContainer: self.graphics.container
       });
       buttonGroup.setConfig({
         fill: '#fff',
@@ -606,9 +573,9 @@ module.exports = function (dep) {
       });
 
       // extension label
-      fromDateLabel = new this.toolbox.Label('Zoom:', {
-        smartLabel: this.smartLabel,
-        paper: this.graphics.paper
+      fromDateLabel = new self.toolbox.Label('Zoom:', {
+        smartLabel: self.smartLabel,
+        paper: self.graphics.paper
       }, self.extData.style['label-config']);
       group.addSymbol(fromDateLabel);
 
@@ -623,11 +590,11 @@ module.exports = function (dep) {
           .prop('x-axis-visible-range-start', self.startDataset)
           .unlock();
       }};
-      allButton.btn = new this.toolbox.Symbol('ALL', true, {
-        paper: this.graphics.paper,
-        chart: this.chart,
-        smartLabel: this.smartLabel,
-        chartContainer: this.graphics.container
+      allButton.btn = new self.toolbox.Symbol('ALL', true, {
+        paper: self.graphics.paper,
+        chart: self.chart,
+        smartLabel: self.smartLabel,
+        chartContainer: self.graphics.container
       }, self.extData.style['all-config']).attachEventHandlers({
         click: allButton.fn,
         tooltext: 'ALL'
@@ -646,8 +613,8 @@ module.exports = function (dep) {
       // adding group and button group to toolbar
       toolbar.addComponent(group);
       toolbar.addComponent(buttonGroup);
-      this.toolbar = toolbar;
-      this.buttonGroup = buttonGroup;
+      self.toolbar = toolbar;
+      self.buttonGroup = buttonGroup;
       return toolbar;
     };
 
@@ -862,7 +829,6 @@ module.exports = function (dep) {
             instance.globalReactiveModel.model['x-axis-absolute-range-end'];
         }
       });
-
       return instance;
     };
 

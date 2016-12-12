@@ -14,7 +14,9 @@
     "watch-es6": "NODE_ENV=development webpack --config webpack-es6.config.js --progress --colors --watch",
     "build-es6-prod": "NODE_ENV=production webpack --config webpack-es6.config.js --progress --colors",
     "build-es6-dev": "NODE_ENV=development webpack --config webpack-es6.config.js --progress --colors",
-    "build-es6": "npm run build-es6-dev && npm run build-es6-prod"
+    "build-es6": "npm run build-es6-dev && npm run build-es6-prod",
+    "test": "jest",
+    "coverage": "jest --coverage"
   },
   "repository": {
     "type": "git",
@@ -53,6 +55,7 @@
     "webpack-stream": "^3.2.0"
   },
   "dependencies": {
-    "fusioncharts": "^3.11.3"
+    "fusioncharts": "^3.11.3",
+    "jest": "^17.0.3"
   }
 }

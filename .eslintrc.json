@@ -4,6 +4,9 @@
         "standard",
         "promise"
     ],
+    "env": {
+      "jest": true
+    },
     "globals":{
       "Raphael": true,
       "FusionCharts": true
