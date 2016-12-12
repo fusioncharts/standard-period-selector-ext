@@ -692,13 +692,13 @@ module.exports = function (dep) {
         }
       ]);
       instance.extData = {
-        'disabled': 'false',
+        'disabled': false,
         'default-select': 'ALL',
         'all-button': true,
         'contextual-button': true,
         'calculated-button': true,
-        'anchor-align': 'left',
         'posWrtCanvas': 'top',
+        'anchor-align': 'right',
         'layout': 'inline',
         'alignment': 'left',
         'orientation': 'horizontal',
@@ -744,6 +744,10 @@ module.exports = function (dep) {
               'fill': '#4b4b4b',
               'line-height': '1',
               'letter-spacing': '-0.04em'
+            },
+            shadow: {
+              'fill': '#000',
+              'opacity': '0.35'
             }
           },
           'calculated-config': {
@@ -765,6 +769,10 @@ module.exports = function (dep) {
               'fill': '#4b4b4b',
               'line-height': '1',
               'letter-spacing': '-0.04em'
+            },
+            shadow: {
+              'fill': '#000',
+              'opacity': '0.35'
             }
           },
           'contextual-config-first': {
@@ -786,6 +794,10 @@ module.exports = function (dep) {
               'fill': '#696969',
               'line-height': '1',
               'letter-spacing': '-0.04em'
+            },
+            shadow: {
+              'fill': '#000',
+              'opacity': '0.35'
             }
           },
           'contextual-config': {
@@ -807,6 +819,10 @@ module.exports = function (dep) {
               'fill': '#4b4b4b',
               'line-height': '1',
               'letter-spacing': '-0.04em'
+            },
+            shadow: {
+              'fill': '#000',
+              'opacity': '0.35'
             }
           }
         }
@@ -871,7 +887,6 @@ module.exports = function (dep) {
 
       for (i = 0, ln = self.toolbars.length; i < ln; i++) {
         logicalSpace = self.toolbars[i].getLogicalSpace(availableWidth, availableHeight);
-        console.log('logical space', logicalSpace);
         width = Math.max(logicalSpace.width, width);
         height += logicalSpace.height;
         self.toolbars[i].width = logicalSpace.width;
