@@ -397,13 +397,11 @@
 
 	    // --test case made--
 	    // adds multipliers to the timerules object
-	    processMultipliers (timeArr) {
-	      var self = this;
+	    processMultipliers (timeArr, customMultipliers) {
 	      for (let i = 0; i < timeArr.length; i++) {
 	        let len = timeArr[i].possibleFactors.length,
 	          timeName = timeArr[i] && timeArr[i].name,
-	          timeObj = timeArr && timeArr[i],
-	          customMultipliers = self && self.customMultipliers || {};
+	          timeObj = timeArr && timeArr[i];
 	        timeObj.multipliers = [];
 	        if (customMultipliers[timeName]) {
 	          timeObj.multipliers = customMultipliers[timeName];
@@ -736,15 +734,6 @@
 	          instance.chartInstance = chartInstance;
 	        }
 	      ]);
-	      instance.endActiveWindow = instance.globalReactiveModel.model['x-axis-visible-range-end'];
-	      instance.startActiveWindow = instance.globalReactiveModel.model['x-axis-visible-range-start'];
-	      instance.startDataset = instance.globalReactiveModel.model['x-axis-absolute-range-start'];
-	      instance.endDataset = instance.globalReactiveModel.model['x-axis-absolute-range-end'];
-	      instance.timeRules = instance.chartInstance.apiInstance.getComponentStore();
-	      instance.timeRules = instance.timeRules.getCanvasByIndex(0).composition.impl;
-	      instance.timeRules = instance.timeRules.getDataAggregator();
-	      instance.timeRules = instance.timeRules.getAggregationTimeRules();
-	      instance.timePeriods = instance.processMultipliers(instance.timeRules);
 	      instance.extData = {
 	        'disabled': 'false',
 	        'default-select': 'ALL',
@@ -866,19 +855,20 @@
 	        }
 	      };
 	      Object.assign(instance.extData, instance.extDataUser);
+	      instance.endActiveWindow = instance.globalReactiveModel.model['x-axis-visible-range-end'];
+	      instance.startActiveWindow = instance.globalReactiveModel.model['x-axis-visible-range-start'];
+	      instance.startDataset = instance.globalReactiveModel.model['x-axis-absolute-range-start'];
+	      instance.endDataset = instance.globalReactiveModel.model['x-axis-absolute-range-end'];
+	      instance.timeRules = instance.chartInstance.apiInstance.getComponentStore();
+	      instance.timeRules = instance.timeRules.getCanvasByIndex(0).composition.impl;
+	      instance.timeRules = instance.timeRules.getDataAggregator();
+	      instance.timeRules = instance.timeRules.getAggregationTimeRules();
+	      instance.timePeriods = instance.processMultipliers(instance.timeRules, instance.extData.customMultipliers);
 	      instance.allButtonShow = instance.extData['all-button'];
 	      instance.calculatedButtonShow = instance.extData['calculated-button'];
 	      instance.contextualButtonShow = instance.extData['contextual-button'];
 	      instance.anchorPositions = instance.extData['anchor-align'];
-	      instance.customMultipliers = instance.extData.customMultipliers || {
-	        'millisecond': [1, 500],
-	        'second': [1, 5, 15, 30],
-	        'minute': [1, 5, 15, 30],
-	        'hour': [1, 3, 6, 12],
-	        'day': [1, 7, 15],
-	        'month': [1, 3, 6],
-	        'year': [1, 3]
-	      };
+	      instance.customMultipliers = instance.extData.customMultipliers;
 	      keySelect = instance.extData['default-select'];
 	      if (keySelect) {
 	        if (keySelect === 'ALL') {
