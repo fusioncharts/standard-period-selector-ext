@@ -156,7 +156,9 @@ module.exports = function (dep) {
       var self = this,
         targetBlock,
         i = 0,
+        ii = 0,
         j = 0,
+        jj = 0,
         activeWindow = self.endActiveWindow - self.startActiveWindow,
         key,
         anchorPositions = self.anchorPositions,
@@ -175,7 +177,7 @@ module.exports = function (dep) {
       }
 
       self.hideAllCalcBtns();
-      for (i = 0; i < timePeriods.length; i++) {
+      for (i = 0, ii = timePeriods.length; i < ii; i++) {
         interval = timePeriods[i].interval;
         name = timePeriods[i].name;
         abbreviation = timePeriods[i].abbreviation.single;
@@ -195,7 +197,7 @@ module.exports = function (dep) {
               'multipliers': []
             });
             // calculating and populating the applicable multpliers of each unit
-            for (j = 0; j < timePeriods[i].multipliers.length; j++) {
+            for (j = 0, jj = timePeriods[i].multipliers.length; j < jj; j++) {
               if ((activeWindow / self.ratio < timePeriods[i].multipliers[j] * interval) &&
                 (timePeriods[i].multipliers[j] * interval) > minimumBucket) {
                 standardCalculatedPeriods[standardCalculatedPeriods.length - 1].multipliers.push(
@@ -206,8 +208,8 @@ module.exports = function (dep) {
         }
       }
 
-      for (i = 0; i < standardCalculatedPeriods.length; i++) {
-        for (j = 0; j < standardCalculatedPeriods[i].multipliers.length; j++) {
+      for (i = 0, ii = standardCalculatedPeriods.length; i < ii; i++) {
+        for (j = 0, jj = standardCalculatedPeriods[i].multipliers.length; j < jj; j++) {
           key = standardCalculatedPeriods[i].multipliers[j] +
             standardCalculatedPeriods[i].name;
           calculatedObj[key].btn && calculatedObj[key].btn.show();
@@ -250,7 +252,7 @@ module.exports = function (dep) {
         x2 = x1 + bBox.width;
         y2 = bBox.y + bBox.height;
         selectLine.show().attr({
-          path: ['M', x1 - 0.5, y2 - 0.5, 'L', x2 + 0.5, y2 - 0.5]
+          path: ['M', x1 + 1, y2 - 1.2, 'L', x2, y2 - 1.2]
         });
       } else {
         selectLine.hide();
@@ -315,9 +317,10 @@ module.exports = function (dep) {
           }
         }
       }
-
-      self.showApplicableCalculatedButtons();
-      self.highlightActiveRange();
+      if (self.toolbarDrawn) {
+        self.showApplicableCalculatedButtons();
+        self.highlightActiveRange();
+      }
     }
 
     // *********** Drzaw the btns initialy ***** //
@@ -325,7 +328,7 @@ module.exports = function (dep) {
     // --test case made--
     // adds multipliers to the timerules object
     processMultipliers (timeArr, customMultipliers) {
-      for (let i = 0; i < timeArr.length; i++) {
+      for (let i = 0, ii = timeArr.length; i < ii; i++) {
         let len = timeArr[i].possibleFactors.length,
           timeName = timeArr[i] && timeArr[i].name,
           timeObj = timeArr && timeArr[i];
@@ -397,11 +400,11 @@ module.exports = function (dep) {
               shortKey: keyAbb
             };
 
-            btnCalc = new this.toolbox.Symbol(keyAbb, true, {
-              paper: this.graphics.paper,
-              chart: this.chart,
-              smartLabel: this.smartLabel,
-              chartContainer: this.graphics.container
+            btnCalc = new self.toolbox.Symbol(keyAbb, true, {
+              paper: self.graphics.paper,
+              chart: self.chart,
+              smartLabel: self.smartLabel,
+              chartContainer: self.graphics.container
             }, self.extData.style['calculated-config']).attachEventHandlers({
               'click': btnObj.fn,
               tooltext: self.timePeriods[i].multipliers[j] + ' ' + self.timePeriods[i].description
@@ -419,7 +422,8 @@ module.exports = function (dep) {
       var self = this,
         buttons = self.standardContexualPeriods,
         i = 0,
-        endStamp = self.globalReactiveModel.model['x-axis-absolute-range-end'] || 9999999,
+        ii = 0,
+        endStamp = self.globalReactiveModel.model['x-axis-absolute-range-end'],
         dateStart = endStamp - 2,
         dateEnd = endStamp,
         relativeTDButton = {},
@@ -428,7 +432,7 @@ module.exports = function (dep) {
         startActiveWindow = self.startActiveWindow,
         endActiveWindow = self.endActiveWindow;
 
-      for (; i < tdButtons.length; i++) {
+      for (ii = tdButtons.length; i < ii; i++) {
         dateStart = new Date(endStamp);
         if (tdButtons[i].name === 'YTD') {
           dateStart.setMonth(0);
@@ -475,7 +479,7 @@ module.exports = function (dep) {
         }
       }
       relativeTDButton.milliseconds = Infinity;
-      for (i = 0; i < tdButtons.length; i++) {
+      for (i = 0, ii = tdButtons.length; i < ii; i++) {
         if (Math.abs(tdButtons[i].milliseconds - (endActiveWindow - startActiveWindow)) < relativeTDButton.milliseconds) {
           relativeTDButton.milliseconds = tdButtons[i].milliseconds;
           relativeTDButton.name = tdButtons[i].abbreviation;
@@ -490,9 +494,9 @@ module.exports = function (dep) {
         btnObj,
         keyName;
       self.generateCtxBtnList();
-      for (let i = 0; i < this.standardContexualPeriods.length; i++) {
+      for (let i = 0, ii = this.standardContexualPeriods.length; i < ii; i++) {
         contextualConfig = (i === 0) ? self.extData.style['contextual-config-first'] : self.extData.style['contextual-config'];
-        keyName = this.standardContexualPeriods[i].abbreviation;
+        keyName = self.standardContexualPeriods[i].abbreviation;
         btnObj = contextualObj[keyName] = {
           contextStart: self.standardContexualPeriods[i].dateStart,
           contextEnd: self.standardContexualPeriods[i].dateEnd,
@@ -508,15 +512,15 @@ module.exports = function (dep) {
           }
         };
 
-        btnObj.btn = new this.toolbox.Symbol(this.standardContexualPeriods[i].abbreviation, true, {
-          paper: this.graphics.paper,
-          chart: this.chart,
-          smartLabel: this.smartLabel,
-          chartContainer: this.graphics.container
+        btnObj.btn = new self.toolbox.Symbol(self.standardContexualPeriods[i].abbreviation, true, {
+          paper: self.graphics.paper,
+          chart: self.chart,
+          smartLabel: self.smartLabel,
+          chartContainer: self.graphics.container
         }, contextualConfig)
           .attachEventHandlers({
             'click': btnObj.fn,
-            tooltext: this.standardContexualPeriods[i].description
+            tooltext: self.standardContexualPeriods[i].description
           });
 
         if (self.standardContexualPeriods[i].dateEnd - self.standardContexualPeriods[i].dateStart >= self.minimumBucket) {
@@ -877,15 +881,14 @@ module.exports = function (dep) {
     };
 
     getLogicalSpace (availableWidth = this._pWidth, availableHeight = this._pHeight) {
-      // availableWidth /= 2;
       var logicalSpace,
-        width = 1, // width hardcoded; TODO: make it dynamic
+        width = 0,
         height = 0,
         i,
-        ln,
+        ii,
         self = this;
 
-      for (i = 0, ln = self.toolbars.length; i < ln; i++) {
+      for (i = 0, ii = self.toolbars.length; i < ii; i++) {
         logicalSpace = self.toolbars[i].getLogicalSpace(availableWidth, availableHeight);
         width = Math.max(logicalSpace.width, width);
         height += logicalSpace.height;
@@ -996,18 +999,18 @@ module.exports = function (dep) {
         for (i = 0, ln = toolbars.length; i < ln; i++) {
           toolbar = toolbars[i];
           toolbar.draw(x, y, group);
+          self.toolbarDrawn = true;
         }
-      }
-
-      if (clickedId) {
-        activeBtn = calculatedObj[clickedId] || contextualObj[clickedId] || self.btns[clickedId];
-        if (activeBtn) {
-          activeBtn.fn && activeBtn.fn();
+        if (clickedId) {
+          activeBtn = calculatedObj[clickedId] || contextualObj[clickedId] || self.btns[clickedId];
+          if (activeBtn) {
+            activeBtn.fn && activeBtn.fn();
+          } else {
+            self.onActiveRangeChange();
+          }
         } else {
           self.onActiveRangeChange();
         }
-      } else {
-        self.onActiveRangeChange();
       }
     };
   }

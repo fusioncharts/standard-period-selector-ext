@@ -91,7 +91,7 @@
                         datasets: [{
                             category: {
                                 dateformat: "%e-%b-%Y",
-                                data: getRandomDates(3502)
+                                data: getRandomDates(3000)
                             },
                             dataset: [
                                 {
@@ -99,17 +99,24 @@
                                     series: [
                                         {
                                             plot: {
-                                                type: "column"
+                                                type: "line"
                                             },
                                             name: "Series 1",
-                                            data: getRandomSeries(3502)
+                                            data: getRandomSeries(3000)
                                         },
                                         {
                                             plot: {
                                                 type: "line"
                                             },
                                             name: "Series 2",
-                                            data: getRandomSeries(3502)
+                                            data: getRandomSeries(3000)
+                                        },
+                                        {
+                                            plot: {
+                                                type: "line"
+                                            },
+                                            name: "Series 3",
+                                            data: getRandomSeries(3000)
                                         }
                                         // {
                                         //     plot: {
@@ -150,7 +157,7 @@
                         'disabled': false,
                         'default-select': 'ALL',
                         'all-button': true,
-                        'contextual-button': true,
+                        'contextual-button': false,
                         'calculated-button': true,
                         'posWrtCanvas': 'top',
                         'anchor-align': 'right',
