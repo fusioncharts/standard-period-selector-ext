@@ -19,7 +19,7 @@
   <script type='text/javascript'>
     var tsChart;
         function getRandomDates (len) {
-        var day = 1, months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct', 'Nov','Dec'],
+        var day = 10, months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct', 'Nov','Dec'],
                year = 2015,month = 0,arr = [];
 
            for (i = 0; i < len; i++) {
@@ -77,8 +77,8 @@
                 type: 'timeseries',
                 plottype: 'line',
                 renderAt: 'chart-container',
-                width: '1000',
-                height: '550',
+                width: '900',
+                height: '500',
                 dataFormat: 'json',
                 dataSource: {
                     chart: {
@@ -91,7 +91,7 @@
                         datasets: [{
                             category: {
                                 dateformat: "%e-%b-%Y",
-                                data: getRandomDates(3000)
+                                data: getRandomDates(80)
                             },
                             dataset: [
                                 {
@@ -102,21 +102,14 @@
                                                 type: "line"
                                             },
                                             name: "Series 1",
-                                            data: getRandomSeries(3000)
+                                            data: getRandomSeries(80)
                                         },
                                         {
                                             plot: {
                                                 type: "line"
                                             },
                                             name: "Series 2",
-                                            data: getRandomSeries(3000)
-                                        },
-                                        {
-                                            plot: {
-                                                type: "line"
-                                            },
-                                            name: "Series 3",
-                                            data: getRandomSeries(3000)
+                                            data: getRandomSeries(80)
                                         }
                                         // {
                                         //     plot: {
@@ -157,7 +150,7 @@
                         'disabled': false,
                         'default-select': 'ALL',
                         'all-button': true,
-                        'contextual-button': false,
+                        'contextual-button': true,
                         'calculated-button': true,
                         'posWrtCanvas': 'top',
                         'anchor-align': 'right',

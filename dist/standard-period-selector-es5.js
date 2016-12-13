@@ -263,7 +263,8 @@
 	            name,
 	            abbreviation,
 	            standardCalculatedPeriods = [],
-	            minimumBucket = self.minimumBucket;
+	            minimumBucket = self.minimumBucket,
+	            maximumBucket = self.maximumBucket;
 
 	        if (anchorPositions === 'right') {
 	          targetBlock = self.endActiveWindow - self.startDataset;
@@ -294,7 +295,7 @@
 	              });
 	              // calculating and populating the applicable multpliers of each unit
 	              for (j = 0, jj = timePeriods[i].multipliers.length; j < jj; j++) {
-	                if (activeWindow / self.ratio < timePeriods[i].multipliers[j] * interval && timePeriods[i].multipliers[j] * interval > minimumBucket) {
+	                if (activeWindow / self.ratio < timePeriods[i].multipliers[j] * interval && timePeriods[i].multipliers[j] * interval > minimumBucket && timePeriods[i].multipliers[j] * interval < maximumBucket) {
 	                  standardCalculatedPeriods[standardCalculatedPeriods.length - 1].multipliers.push(timePeriods[i].multipliers[j]);
 	                }
 	              }
@@ -593,11 +594,16 @@
 	            contextualConfig,
 	            contextualObj = self.btns.contextualObj,
 	            btnObj,
-	            keyName;
+	            keyName,
+	            firstDraw = true;
 	        self.generateCtxBtnList();
 
 	        var _loop2 = function _loop2(i, ii) {
-	          contextualConfig = i === 0 ? self.extData.style['contextual-config-first'] : self.extData.style['contextual-config'];
+	          if (!(self.standardContexualPeriods[i].dateEnd - self.standardContexualPeriods[i].dateStart >= self.minimumBucket && self.standardContexualPeriods[i].dateStart > self.startDataset)) {
+	            return 'continue';
+	          }
+	          contextualConfig = firstDraw ? self.extData.style['contextual-config-first'] : self.extData.style['contextual-config'];
+	          firstDraw = false;
 	          keyName = self.standardContexualPeriods[i].abbreviation;
 	          btnObj = contextualObj[keyName] = {
 	            contextStart: self.standardContexualPeriods[i].dateStart,
@@ -619,14 +625,13 @@
 	            'click': btnObj.fn,
 	            tooltext: self.standardContexualPeriods[i].description
 	          });
-
-	          if (self.standardContexualPeriods[i].dateEnd - self.standardContexualPeriods[i].dateStart >= self.minimumBucket) {
-	            buttonGroup.addSymbol(btnObj.btn);
-	          }
+	          buttonGroup.addSymbol(btnObj.btn);
 	        };
 
 	        for (var i = 0, ii = this.standardContexualPeriods.length; i < ii; i++) {
-	          _loop2(i, ii);
+	          var _ret2 = _loop2(i, ii);
+
+	          if (_ret2 === 'continue') continue;
 	        }
 	      }
 
@@ -917,17 +922,23 @@
 	        instance.startActiveWindow = instance.globalReactiveModel.model['x-axis-visible-range-start'];
 	        instance.startDataset = instance.globalReactiveModel.model['x-axis-absolute-range-start'];
 	        instance.endDataset = instance.globalReactiveModel.model['x-axis-absolute-range-end'];
+
+	        instance.maximumBucket = instance.endDataset - instance.startDataset;
+
 	        instance.timeRules = instance.chartInstance.apiInstance.getComponentStore();
 	        instance.timeRules = instance.timeRules.getCanvasByIndex(0).composition.impl;
 	        instance.timeRules = instance.timeRules.getDataAggregator();
 	        instance.timeRules = instance.timeRules.getAggregationTimeRules();
+
 	        instance.timePeriods = instance.processMultipliers(instance.timeRules, instance.extData.customMultipliers);
+
 	        instance.allButtonShow = instance.extData['all-button'];
 	        instance.calculatedButtonShow = instance.extData['calculated-button'];
 	        instance.contextualButtonShow = instance.extData['contextual-button'];
 	        instance.anchorPositions = instance.extData['anchor-align'];
 	        instance.customMultipliers = instance.extData.customMultipliers;
 	        keySelect = instance.extData['default-select'];
+
 	        if (keySelect) {
 	          if (keySelect === 'ALL') {
 	            instance.clickedId = 'ALL';
