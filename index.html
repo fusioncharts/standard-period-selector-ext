@@ -13,8 +13,9 @@
   <!-- <script src='bower_components/fusioncharts/fusioncharts.timeseries.js' charset='utf-8'></script> -->
   <script src='node_modules/fusioncharts/fusioncharts.timeseries.js' charset='utf-8'></script>
   <!-- <script src='bower_components/fusioncharts/toolboxext.js' charset='utf-8'></script> -->
-  <script src='dist/standard-period-selector.js' charset='utf-8'></script>
+  <!-- <script src='dist/standard-period-selector.js' charset='utf-8'></script> -->
   <script src='http://192.168.0.207/date-range-chooser-ext/dist/date-range-chooser.min.js' charset='utf-8'></script>
+  <script src='../xt-edge/develop/vendors/extensions/data-aggregator/dist/data-aggregator.js' ></script>
   <div id='chart-container'></div>
   <script type='text/javascript'>
     var tsChart;
@@ -91,7 +92,7 @@
                         datasets: [{
                             category: {
                                 dateformat: "%e-%b-%Y",
-                                data: getRandomDates(80)
+                                data: getRandomDates(1138)
                             },
                             dataset: [
                                 {
@@ -102,26 +103,26 @@
                                                 type: "line"
                                             },
                                             name: "Series 1",
-                                            data: getRandomSeries(80)
+                                            data: getRandomSeries(1138)
                                         },
                                         {
                                             plot: {
                                                 type: "line"
                                             },
                                             name: "Series 2",
-                                            data: getRandomSeries(80)
+                                            data: getRandomSeries(1138)
+                                        },
+                                        {
+                                            plot: {
+                                                type: "line",
+                                                style: {
+                                                  stroke: '#ff0000',
+                                                  'stroke-width': 2
+                                                }
+                                            },
+                                            name: "Series 1",
+                                            data: getRandomSeries(1138)
                                         }
-                                        // {
-                                        //     plot: {
-                                        //         type: "line",
-                                        //         style: {
-                                        //           stroke: '#ff0000',
-                                        //           'stroke-width': 2
-                                        //         }
-                                        //     },
-                                        //     name: "Series 1",
-                                        //     data: getRandomSeries(20)
-                                        // }
 
                                     ]
                                 }
