@@ -1077,8 +1077,9 @@
 	              }
 	            }
 	          }
+	          delete self.keySelect;
+	          clickedId = self.clickedId;
 	        }
-	        clickedId = self.clickedId;
 
 	        x = x === undefined ? measurement.x : x;
 	        y = y === undefined ? measurement.y : y;
