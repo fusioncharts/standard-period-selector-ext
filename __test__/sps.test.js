@@ -14,7 +14,6 @@ describe('StandardPeriodSelector', () => {
   standardPeriodSelector.globalReactiveModel = {};
   standardPeriodSelector.globalReactiveModel.model = {};
   standardPeriodSelector.globalReactiveModel.model['x-axis-absolute-range-end'] = 9999999999;
-
   it('Should be able to create a new instance', () => {
     expect(standardPeriodSelector).toBeInstanceOf(StandardPeriodSelector);
   });
@@ -99,7 +98,7 @@ describe('StandardPeriodSelector', () => {
       }
     }];
     standardPeriodSelector.hideAllCalcBtns();
-    expect(hide1).toBeDefined();
-    expect(hide2).toBeDefined();
+    expect(hide1).toBe('hide');
+    expect(hide2).toBe('hide');
   });
 });
