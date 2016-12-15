@@ -434,6 +434,9 @@
 	              timeName = timeArr[i] && timeArr[i].name,
 	              timeObj = timeArr && timeArr[i];
 	          timeObj.multipliers = [];
+	          if (customMultipliers === undefined) {
+	            customMultipliers = {};
+	          }
 	          if (customMultipliers[timeName]) {
 	            timeObj.multipliers = customMultipliers[timeName];
 	          } else if (len === 1) {
@@ -728,12 +731,6 @@
 	          buttonGroup.addSymbol(allButton.btn);
 	        };
 
-	        // create all calculated button
-	        // self.createCalculatedButtons(buttonGroup);
-
-	        // create all contextual button
-	        // self.createContextualButtons(buttonGroup);
-
 	        // adding dummyButton
 	        for (var i = 0; i < 8; i++) {
 	          dummyButtonGroup.addSymbol(new self.toolbox.Symbol('ALL', true, {
@@ -763,12 +760,7 @@
 	      // *********** Extension interface methods *********//
 
 	      value: function init(require) {
-	        var instance = this,
-	            calculatedObj = instance.btns.calculatedObj,
-	            contextualObj = instance.btns.contextualObj,
-	            keySelect,
-	            key,
-	            notFound;
+	        var instance = this;
 	        require(['graphics', 'chart', 'canvasConfig', 'MarkerManager', 'reactiveModel', 'globalReactiveModel', 'spaceManagerInstance', 'smartLabel', 'extData', 'chartInstance', function (graphics, chart, canvasConfig, markerManager, reactiveModel, globalReactiveModel, spaceManagerInstance, smartLabel, extData, chartInstance) {
 	          instance.graphics = graphics;
 	          instance.chart = chart;
@@ -937,25 +929,8 @@
 	        instance.contextualButtonShow = instance.extData['contextual-button'];
 	        instance.anchorPositions = instance.extData['anchor-align'];
 	        instance.customMultipliers = instance.extData.customMultipliers;
-	        keySelect = instance.extData['default-select'];
+	        instance.keySelect = instance.extData['default-select'];
 
-	        if (keySelect) {
-	          if (keySelect === 'ALL') {
-	            instance.clickedId = 'ALL';
-	          } else if (contextualObj[keySelect]) {
-	            instance.clickedId = keySelect;
-	          } else {
-	            notFound = true;
-	            for (key in calculatedObj) {
-	              if (notFound && calculatedObj[key].shortKey === keySelect) {
-	                instance.clickedId = calculatedObj[key].shortKey;
-	                notFound = false;
-	              }
-	            }
-	          }
-	        }
-
-	        // instance.setActivePeriod(instance.startActiveWindow, instance.endActiveWindow);
 	        instance.measurement = {};
 	        instance.flag = true;
 	        instance.toolbars = [];
@@ -1074,14 +1049,12 @@
 	            activeBtn,
 	            model = self.globalReactiveModel.model,
 	            minimumBucket = self.minimumBucket,
-	            buttonGroup = self.buttonGroup;
+	            buttonGroup = self.buttonGroup,
+	            notFound,
+	            key;
 
 	        minimumBucket = model['minimum-consecutive-datestamp-diff'] * model['x-axis-maximum-allowed-ticks'];
 	        self.minimumBucket = minimumBucket;
-
-	        // 'all-button': true,
-	        // 'contextual-button': true,
-	        // 'calculated-button': true,
 
 	        self.dummyButtonGroup.dispose();
 	        // create all calculated button
@@ -1089,6 +1062,23 @@
 
 	        // create all contextual button
 	        self.contextualButtonShow && self.createContextualButtons(buttonGroup);
+
+	        if (self.keySelect) {
+	          if (self.keySelect === 'ALL') {
+	            self.clickedId = 'ALL';
+	          } else if (contextualObj[self.keySelect]) {
+	            self.clickedId = self.keySelect;
+	          } else {
+	            notFound = true;
+	            for (key in calculatedObj) {
+	              if (notFound && calculatedObj[key].shortKey === self.keySelect) {
+	                self.clickedId = key;
+	                notFound = false;
+	              }
+	            }
+	          }
+	        }
+	        clickedId = self.clickedId;
 
 	        x = x === undefined ? measurement.x : x;
 	        y = y === undefined ? measurement.y : y;

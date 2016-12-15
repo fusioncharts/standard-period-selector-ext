@@ -335,6 +335,9 @@ module.exports = function (dep) {
           timeName = timeArr[i] && timeArr[i].name,
           timeObj = timeArr && timeArr[i];
         timeObj.multipliers = [];
+        if (customMultipliers === undefined) {
+          customMultipliers = {};
+        }
         if (customMultipliers[timeName]) {
           timeObj.multipliers = customMultipliers[timeName];
         } else if (len === 1) {
@@ -628,12 +631,6 @@ module.exports = function (dep) {
         buttonGroup.addSymbol(allButton.btn);
       };
 
-      // create all calculated button
-      // self.createCalculatedButtons(buttonGroup);
-
-      // create all contextual button
-      // self.createContextualButtons(buttonGroup);
-
       // adding dummyButton
       for (let i = 0; i < 8; i++) {
         dummyButtonGroup.addSymbol(new self.toolbox.Symbol('ALL', true, {
@@ -660,12 +657,7 @@ module.exports = function (dep) {
     // *********** Extension interface methods *********//
 
     init (require) {
-      var instance = this,
-        calculatedObj = instance.btns.calculatedObj,
-        contextualObj = instance.btns.contextualObj,
-        keySelect,
-        key,
-        notFound;
+      var instance = this;
       require([
         'graphics',
         'chart',
@@ -856,25 +848,8 @@ module.exports = function (dep) {
       instance.contextualButtonShow = instance.extData['contextual-button'];
       instance.anchorPositions = instance.extData['anchor-align'];
       instance.customMultipliers = instance.extData.customMultipliers;
-      keySelect = instance.extData['default-select'];
+      instance.keySelect = instance.extData['default-select'];
 
-      if (keySelect) {
-        if (keySelect === 'ALL') {
-          instance.clickedId = 'ALL';
-        } else if (contextualObj[keySelect]) {
-          instance.clickedId = keySelect;
-        } else {
-          notFound = true;
-          for (key in calculatedObj) {
-            if (notFound && calculatedObj[key].shortKey === keySelect) {
-              instance.clickedId = calculatedObj[key].shortKey;
-              notFound = false;
-            }
-          }
-        }
-      }
-
-      // instance.setActivePeriod(instance.startActiveWindow, instance.endActiveWindow);
       instance.measurement = {};
       instance.flag = true;
       instance.toolbars = [];
@@ -985,14 +960,12 @@ module.exports = function (dep) {
         activeBtn,
         model = self.globalReactiveModel.model,
         minimumBucket = self.minimumBucket,
-        buttonGroup = self.buttonGroup;
+        buttonGroup = self.buttonGroup,
+        notFound,
+        key;
 
       minimumBucket = model['minimum-consecutive-datestamp-diff'] * model['x-axis-maximum-allowed-ticks'];
       self.minimumBucket = minimumBucket;
-
-        // 'all-button': true,
-        // 'contextual-button': true,
-        // 'calculated-button': true,
 
       self.dummyButtonGroup.dispose();
       // create all calculated button
@@ -1000,6 +973,23 @@ module.exports = function (dep) {
 
       // create all contextual button
       self.contextualButtonShow && self.createContextualButtons(buttonGroup);
+
+      if (self.keySelect) {
+        if (self.keySelect === 'ALL') {
+          self.clickedId = 'ALL';
+        } else if (contextualObj[self.keySelect]) {
+          self.clickedId = self.keySelect;
+        } else {
+          notFound = true;
+          for (key in calculatedObj) {
+            if (notFound && calculatedObj[key].shortKey === self.keySelect) {
+              self.clickedId = key;
+              notFound = false;
+            }
+          }
+        }
+      }
+      clickedId = self.clickedId;
 
       x = x === undefined ? measurement.x : x;
       y = y === undefined ? measurement.y : y;
