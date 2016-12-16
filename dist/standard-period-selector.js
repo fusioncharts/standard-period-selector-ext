@@ -454,7 +454,7 @@
 	                    // interval = model['x-axis-visible-range-start'] + interval;
 	                    self.globalReactiveModel
 	                      .lock()
-	                      .prop('x-axis-visible-range-end', model['x-axis-visible-range-start'] + interval)
+	                      .prop('x-axis-visible-range-end', model['x-axis-absolute-range-start'] + interval)
 	                      .prop('x-axis-visible-range-start', self.startDataset)
 	                      .unlock();
 	                  } else {

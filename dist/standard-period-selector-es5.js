@@ -479,7 +479,7 @@
 	                      // model['x-axis-visible-range-start'] = model['x-axis-absolute-range-start'];
 	                      // model['x-axis-visible-range-end'] = model['x-axis-visible-range-start'] + interval;
 	                      // interval = model['x-axis-visible-range-start'] + interval;
-	                      self.globalReactiveModel.lock().prop('x-axis-visible-range-end', model['x-axis-visible-range-start'] + interval).prop('x-axis-visible-range-start', self.startDataset).unlock();
+	                      self.globalReactiveModel.lock().prop('x-axis-visible-range-end', model['x-axis-absolute-range-start'] + interval).prop('x-axis-visible-range-start', self.startDataset).unlock();
 	                    } else {
 	                      model['x-axis-visible-range-start'] = self.endActiveWindow - interval;
 	                    }
