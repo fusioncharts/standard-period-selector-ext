@@ -360,14 +360,16 @@ module.exports = function (dep) {
         calculatedObj = self.btns.calculatedObj,
         btnObj,
         anchorPositions = self.anchorPositions,
-        minimumBucket = this.minimumBucket,
+        minimumBucket = self.minimumBucket,
+        maximumBucket = self.maximumBucket,
         model = self.globalReactiveModel.model;
+
       for (let i = self.timePeriods.length - 1; i >= 0; i--) {
         for (let j = self.timePeriods[i].multipliers.length - 1; j >= 0; j--) {
           let keyAbb = self.timePeriods[i].multipliers[j] + self.timePeriods[i].abbreviation.single,
             keyName = self.timePeriods[i].multipliers[j] + self.timePeriods[i].name;
           let interval = (self.timePeriods[i].multipliers[j] * self.timePeriods[i].interval);
-          if (interval > minimumBucket) {
+          if (interval > minimumBucket && interval < maximumBucket) {
             btnObj = calculatedObj[keyName] = {
               interval: interval,
               fn: function () {
