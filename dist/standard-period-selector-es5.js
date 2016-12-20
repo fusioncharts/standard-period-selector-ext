@@ -306,7 +306,7 @@
 	        for (i = 0, ii = standardCalculatedPeriods.length; i < ii; i++) {
 	          for (j = 0, jj = standardCalculatedPeriods[i].multipliers.length; j < jj; j++) {
 	            key = standardCalculatedPeriods[i].multipliers[j] + standardCalculatedPeriods[i].name;
-	            calculatedObj[key].btn && calculatedObj[key].btn.show();
+	            calculatedObj[key] && calculatedObj[key].btn && calculatedObj[key].btn.show();
 	          }
 	        }
 	        self.standardCalculatedPeriods = standardCalculatedPeriods;
@@ -598,7 +598,12 @@
 	            contextualObj = self.btns.contextualObj,
 	            btnObj,
 	            keyName,
-	            firstDraw = true;
+	            firstDraw;
+	        if (self.extData['calculated-button']) {
+	          firstDraw = true;
+	        } else {
+	          firstDraw = false;
+	        }
 	        self.generateCtxBtnList();
 
 	        var _loop2 = function _loop2(i, ii) {
@@ -1062,7 +1067,6 @@
 
 	        // create all contextual button
 	        self.contextualButtonShow && self.createContextualButtons(buttonGroup);
-
 	        if (self.keySelect) {
 	          if (self.keySelect === 'ALL') {
 	            self.clickedId = 'ALL';

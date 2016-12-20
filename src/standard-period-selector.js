@@ -214,7 +214,7 @@ module.exports = function (dep) {
         for (j = 0, jj = standardCalculatedPeriods[i].multipliers.length; j < jj; j++) {
           key = standardCalculatedPeriods[i].multipliers[j] +
             standardCalculatedPeriods[i].name;
-          calculatedObj[key].btn && calculatedObj[key].btn.show();
+          calculatedObj[key] && calculatedObj[key].btn && calculatedObj[key].btn.show();
         }
       }
       self.standardCalculatedPeriods = standardCalculatedPeriods;
@@ -498,7 +498,12 @@ module.exports = function (dep) {
         contextualObj = self.btns.contextualObj,
         btnObj,
         keyName,
+        firstDraw;
+      if (self.extData['calculated-button']) {
         firstDraw = true;
+      } else {
+        firstDraw = false;
+      }
       self.generateCtxBtnList();
       for (let i = 0, ii = this.standardContexualPeriods.length; i < ii; i++) {
         if (!((self.standardContexualPeriods[i].dateEnd - self.standardContexualPeriods[i].dateStart >= self.minimumBucket) &&
@@ -973,7 +978,6 @@ module.exports = function (dep) {
 
       // create all contextual button
       self.contextualButtonShow && self.createContextualButtons(buttonGroup);
-
       if (self.keySelect) {
         if (self.keySelect === 'ALL') {
           self.clickedId = 'ALL';

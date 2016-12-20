@@ -14,8 +14,8 @@
   <script src='node_modules/fusioncharts/fusioncharts.timeseries.js' charset='utf-8'></script>
   <!-- <script src='bower_components/fusioncharts/toolboxext.js' charset='utf-8'></script> -->
   <script src='dist/standard-period-selector.js' charset='utf-8'></script>
-  <script src='http://192.168.0.207/date-range-chooser-ext/dist/date-range-chooser.min.js' charset='utf-8'></script>
-  <script src='../xt-edge/develop/vendors/extensions/data-aggregator/dist/data-aggregator.js' ></script>
+  <!-- <script src='http://192.168.0.207/date-range-chooser-ext/dist/date-range-chooser.min.js' charset='utf-8'></script> -->
+  <!-- <script src='../xt-edge/develop/vendors/extensions/data-aggregator/dist/data-aggregator.js' ></script> -->
   <div id='chart-container'></div>
   <script type='text/javascript'>
     var tsChart;
@@ -149,14 +149,14 @@
                     extensions: {
                       'standard-period-selector': {
                         'disabled': false,
-                        'default-select': 'ALL',
+                        'default-select': '5Y',
                         'all-button': true,
                         'contextual-button': true,
-                        'calculated-button': true,
+                        'calculated-button': false,
                         'posWrtCanvas': 'top',
                         'anchor-align': 'right',
                         'layout': 'inline',
-                        'alignment': 'left',
+                        'alignment': 'right',
                         'orientation': 'horizontal',
                         'customMultipliers': {
                           'millisecond': [1, 500],
