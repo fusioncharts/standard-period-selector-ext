@@ -739,7 +739,7 @@
 	        };
 
 	        // adding dummyButton
-	        for (var i = 0; i < 8; i++) {
+	        for (var i = 0; i < 6; i++) {
 	          dummyButtonGroup.addSymbol(new self.toolbox.Symbol('ALL', true, {
 	            paper: self.graphics.paper,
 	            chart: self.chart,
