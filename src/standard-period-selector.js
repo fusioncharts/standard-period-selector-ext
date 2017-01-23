@@ -219,6 +219,11 @@ module.exports = function (dep) {
       }
       self.standardCalculatedPeriods = standardCalculatedPeriods;
       self.toolbar && self.toolbar.redraw();
+      if (self.state) {
+        self.buttonGroup.setState && self.buttonGroup.setState(self.state);
+      } else {
+        self.buttonGroup.setState && self.buttonGroup.setState(null);
+      }
     }
 
     // ******** React on active property change ****
@@ -226,39 +231,35 @@ module.exports = function (dep) {
     highlightActiveRange () {
       // first check w.r.t contextual btns then others
       var self = this,
-        selectLine = self.saveSelectLine,
-        boundElement,
         clickedId = self.clickedId,
-        bBox,
-        x1,
-        x2,
-        y2,
         activeBtn,
         contextualObj = self.btns.contextualObj,
         calculatedObj = self.btns.calculatedObj;
 
       // if the heighliter is not createcd create it
-      if (!selectLine) {
-        selectLine = self.saveSelectLine || (self.saveSelectLine = self.graphics.paper.path({
-          'stroke': '#c95a5a',
-          'stroke-width': '2px'
-        }).toFront());
-      }
-
+      // if (!selectLine) {
+      //   selectLine = self.saveSelectLine || (self.saveSelectLine = self.graphics.paper.path({
+      //     'stroke': '#c95a5a',
+      //     'stroke-width': '2px'
+      //   }).toFront());
+      // }
       activeBtn = contextualObj[clickedId] || calculatedObj[clickedId] || self.btns[clickedId];
-
-      if (activeBtn) {
-        boundElement = activeBtn.btn.svgElems.node;
-        bBox = boundElement.getBBox();
-        x1 = bBox.x;
-        x2 = x1 + bBox.width;
-        y2 = bBox.y + bBox.height;
-        selectLine.show().attr({
-          path: ['M', x1 + 1, y2 - 1.2, 'L', x2, y2 - 1.2]
-        });
-      } else {
-        selectLine.hide();
+      if (activeBtn && activeBtn.btn) {
+        self.buttonGroup.setState(activeBtn.btn);
+        self.state = activeBtn.btn;
       }
+      // if (activeBtn) {
+      //   boundElement = activeBtn.btn.svgElems.node;
+      //   bBox = boundElement.getBBox();
+      //   x1 = bBox.x;
+      //   x2 = x1 + bBox.width;
+      //   y2 = bBox.y + bBox.height;
+      //   selectLine.show().attr({
+      //     path: ['M', x1 + 1, y2 - 1.2, 'L', x2, y2 - 1.2]
+      //   });
+      // } else {
+      //   selectLine.hide();
+      // }
     }
 
     // --test case made--
@@ -317,6 +318,9 @@ module.exports = function (dep) {
               }
             }
           }
+          if (!found) {
+            delete self.state;
+          }
         }
       }
       if (self.toolbarDrawn) {
@@ -325,7 +329,7 @@ module.exports = function (dep) {
       }
     }
 
-    // *********** Drzaw the btns initialy ***** //
+    // *********** Draws the btns initialy ***** //
 
     // --test case made--
     // adds multipliers to the timerules object
@@ -356,13 +360,13 @@ module.exports = function (dep) {
 
     createCalculatedButtons (buttonGroup) {
       var self = this,
-        btnCalc,
         calculatedObj = self.btns.calculatedObj,
         btnObj,
         anchorPositions = self.anchorPositions,
         minimumBucket = self.minimumBucket,
         maximumBucket = self.maximumBucket,
-        model = self.globalReactiveModel.model;
+        model = self.globalReactiveModel.model,
+        btnList = {};
 
       for (let i = self.timePeriods.length - 1; i >= 0; i--) {
         for (let j = self.timePeriods[i].multipliers.length - 1; j >= 0; j--) {
@@ -373,14 +377,14 @@ module.exports = function (dep) {
             btnObj = calculatedObj[keyName] = {
               interval: interval,
               fn: function () {
+                // self.toolbar && self.toolbar.redraw();
+                // buttonGroup.setState(this);
+                // self.state = this;
                 self.clickedId = keyName;
                 self.categoryClicked = 'calculated';
                 self.highlightActiveRange();
                 if (anchorPositions === 'right') {
                   if (model['x-axis-absolute-range-start'] > self.endActiveWindow - interval) {
-                    // model['x-axis-visible-range-start'] = model['x-axis-absolute-range-start'];
-                    // model['x-axis-visible-range-end'] = model['x-axis-visible-range-start'] + interval;
-                    // interval = model['x-axis-visible-range-start'] + interval;
                     self.globalReactiveModel
                       .lock()
                       .prop('x-axis-visible-range-end', model['x-axis-absolute-range-start'] + interval)
@@ -391,9 +395,6 @@ module.exports = function (dep) {
                   }
                 } else {
                   if (model['x-axis-absolute-range-end'] < self.startActiveWindow + interval) {
-                    // model['x-axis-visible-range-end'] = model['x-axis-absolute-range-end'];
-                    // model['x-axis-visible-range-start'] = model['x-axis-absolute-range-end'] - interval;
-                    // interval = model['x-axis-absolute-range-end'] - interval;
                     self.globalReactiveModel
                       .lock()
                       .prop('x-axis-visible-range-end', self.endDataset)
@@ -407,20 +408,30 @@ module.exports = function (dep) {
               shortKey: keyAbb
             };
 
-            btnCalc = new self.toolbox.Symbol(keyAbb, true, {
-              paper: self.graphics.paper,
-              chart: self.chart,
-              smartLabel: self.smartLabel,
-              chartContainer: self.graphics.container
-            }, self.extData.style['calculated-config']).attachEventHandlers({
-              'click': btnObj.fn,
-              tooltext: self.timePeriods[i].multipliers[j] + ' ' + self.timePeriods[i].description
-            });
-            btnObj.btn = btnCalc;
-            buttonGroup.addSymbol(btnCalc);
+            btnList[keyName] = {
+              text: keyAbb,
+              config: {
+                height: 22,
+                radius: 1,
+                margin: {
+                  left: -4.5
+                }
+                // className: inputBtnStyles.className,
+                // states: {
+                //   selected: inputBtnStyles.states.selected.className,
+                //   errored: inputBtnStyles.states.errored.className
+                // }
+              },
+              group: buttonGroup,
+              eventListeners: {
+                'click': btnObj.fn
+              }
+            };
+            self.btns[keyName] = btnObj;
           }
         }
       }
+      self.createD3Buttons(btnList);
     }
 
     // --test case made--
@@ -496,29 +507,23 @@ module.exports = function (dep) {
 
     createContextualButtons (buttonGroup) {
       var self = this,
-        contextualConfig,
         contextualObj = self.btns.contextualObj,
         btnObj,
         keyName,
-        firstDraw;
-      if (self.extData['calculated-button']) {
-        firstDraw = true;
-      } else {
-        firstDraw = false;
-      }
+        margin = 0,
+        contextualList = {};
       self.generateCtxBtnList();
       for (let i = 0, ii = this.standardContexualPeriods.length; i < ii; i++) {
         if (!((self.standardContexualPeriods[i].dateEnd - self.standardContexualPeriods[i].dateStart >= self.minimumBucket) &&
           (self.standardContexualPeriods[i].dateStart > self.startDataset))) {
           continue;
         }
-        contextualConfig = firstDraw ? self.extData.style['contextual-config-first'] : self.extData.style['contextual-config'];
-        firstDraw = false;
         keyName = self.standardContexualPeriods[i].abbreviation;
         btnObj = contextualObj[keyName] = {
           contextStart: self.standardContexualPeriods[i].dateStart,
           contextEnd: self.standardContexualPeriods[i].dateEnd,
           fn: function () {
+            // self.state = this;
             self.categoryClicked = 'contextual';
             self.clickedId = self.standardContexualPeriods[i].abbreviation;
             self.highlightActiveRange();
@@ -530,19 +535,102 @@ module.exports = function (dep) {
           }
         };
 
-        btnObj.btn = new self.toolbox.Symbol(self.standardContexualPeriods[i].abbreviation, true, {
+        contextualList[self.standardContexualPeriods[i].abbreviation] = {
+          text: self.standardContexualPeriods[i].abbreviation,
+          config: {
+            height: 22,
+            radius: 1,
+            margin: {
+              left: margin
+            }
+          },
+          group: buttonGroup,
+          eventListeners: {
+            'click': btnObj.fn
+          }
+        };
+
+        margin = -5;
+
+        self.btns[self.standardContexualPeriods[i].abbreviation] = btnObj;
+      }
+      self.createD3Buttons(contextualList);
+    }
+
+    addCssRules (classNames, styles) {
+      var key,
+        className,
+        paper = this.graphics.paper;
+      for (key in classNames) {
+        className = classNames[key];
+        switch (key) {
+          case 'container':
+            styles.container && paper.cssAddRule('.' + className, styles.container.style);
+            break;
+          case 'text':
+            styles.text && paper.cssAddRule('.' + className, styles.text.style);
+        }
+      }
+    }
+
+    createD3Buttons (store) {
+      var key,
+        inputButton,
+        text,
+        config,
+        states,
+        state,
+        btn,
+        styles = this.extData.button,
+        paper = this.graphics.paper,
+        d3 = paper.getInstances().d3,
+        self = this;
+
+      for (key in store) {
+        inputButton = store[key];
+        text = inputButton.text;
+        config = inputButton.config;
+        btn = self.btns[key].btn = d3.button(text).setConfig(config);
+        btn.namespace('fusioncharts');
+        btn.appendSelector('standarperiodselector');
+        self.addCssRules(btn.getIndividualClassNames(btn.getClassName()), styles);
+        states = styles.states;
+        for (state in states) {
+          self.addCssRules(btn.getIndividualClassNames(btn.config.states[state]), styles.states[state]);
+        }
+
+        inputButton.eventListeners && btn.attachEventHandlers({
+          click: inputButton.eventListeners.click.bind(btn)
+        });
+        inputButton.group.addSymbol(btn);
+      }
+    };
+
+    createD3Labels (store) {
+      var key,
+        label,
+        text,
+        config,
+        styles = this.extData.label,
+        self = this,
+        dependencies = {
           paper: self.graphics.paper,
           chart: self.chart,
           smartLabel: self.smartLabel,
           chartContainer: self.graphics.container
-        }, contextualConfig)
-          .attachEventHandlers({
-            'click': btnObj.fn,
-            tooltext: self.standardContexualPeriods[i].description
-          });
-        buttonGroup.addSymbol(btnObj.btn);
+        };
+
+      for (key in store) {
+        label = store[key];
+        text = label.text;
+        config = label.config;
+        self[key] = new self.toolbox.Label(text, dependencies, config);
+        // self[key].namespace('fusioncharts');
+        // self[key].appendSelector('daterange');
+        self.addCssRules(self[key].getIndividualClassNames(self[key].getClassName()), styles);
+        label.group.addSymbol(self[key]);
       }
-    }
+    };
 
     // creates toolbar
     createToolbar () {
@@ -550,50 +638,56 @@ module.exports = function (dep) {
         buttonGroup,
         toolbar,
         allButton,
-        fromDateLabel,
+        label,
+        dummyList,
+        btnList,
         group,
-        dummyButtonGroup;
+        dummyButtonGroup,
+        dependencies = {
+          paper: self.graphics.paper,
+          chart: self.chart,
+          smartLabel: self.smartLabel,
+          chartContainer: self.graphics.container
+        };
 
       // initiating the toolbar
-      toolbar = new self.HorizontalToolbar({
-        paper: self.graphics.paper,
-        chart: self.chart,
-        smartLabel: self.smartLabel,
-        chartContainer: self.graphics.container
-      });
+      toolbar = new self.HorizontalToolbar(dependencies);
       toolbar.setConfig({
         fill: '#fff',
         borderThickness: 0
       });
 
       // making group for the extension label
-      group = new self.toolbox.ComponentGroup({
-        paper: self.graphics.paper,
-        chart: self.chart,
-        smartLabel: self.smartLabel,
-        chartContainer: self.graphics.container
+      group = new self.toolbox.ComponentGroup(dependencies);
+
+      // making buttonGroup for the buttons
+      buttonGroup = new self.toolbox.UniSelectComponentGroup(dependencies);
+
+      buttonGroup.defineStateIndicator(function (symbol) {
+        var bBox = symbol.getBBox(),
+          x1 = bBox.x,
+          x2 = x1 + bBox.width,
+          y2 = bBox.y + bBox.height;
+        // selectLine.show().attr({
+        //   path: ['M', x1 + 1, y2 - 1.2, 'L', x2, y2 - 1.2]
+        // });
+        return {
+          type: 'path',
+          attrs: {
+            d: ['M', x1 + 1, y2 - 1.2, 'L', x2, y2 - 1.2].join(' '),
+            'stroke-width': 2,
+            stroke: '#c95a5a'
+          }
+        };
       });
 
       // making buttonGroup for the buttons
-      buttonGroup = new self.toolbox.ComponentGroup({
-        paper: self.graphics.paper,
-        chart: self.chart,
-        smartLabel: self.smartLabel,
-        chartContainer: self.graphics.container
-      });
+      dummyButtonGroup = new self.toolbox.ComponentGroup(dependencies);
 
-      // making buttonGroup for the buttons
-      dummyButtonGroup = new self.toolbox.ComponentGroup({
-        paper: self.graphics.paper,
-        chart: self.chart,
-        smartLabel: self.smartLabel,
-        chartContainer: self.graphics.container
-      });
-
-      dummyButtonGroup.setConfig({
-        fill: '#fff',
-        borderThickness: 0
-      });
+      // dummyButtonGroup.setConfig({
+      //   fill: '#fff',
+      //   borderThickness: 0
+      // });
 
       buttonGroup.setConfig({
         fill: '#fff',
@@ -605,15 +699,26 @@ module.exports = function (dep) {
       });
 
       // extension label
-      fromDateLabel = new self.toolbox.Label('Zoom:', {
-        smartLabel: self.smartLabel,
-        paper: self.graphics.paper
-      }, self.extData.style['label-config']);
-      group.addSymbol(fromDateLabel);
+      label = {
+        'ZOOM': {
+          text: 'Zoom:',
+          config: {
+            height: 22,
+            margin: {
+              right: -12
+            }
+          },
+          group: group
+        }
+      };
+
+      self.createD3Labels(label);
 
       // 'ALL' button created
       allButton = self.allButtonShow && {fn: function () {
+        // buttonGroup.setState(this);
         self.clickedId = 'ALL';
+        // self.state = this;
         self.categoryClicked = 'ALL';
         self.highlightActiveRange();
         self.globalReactiveModel
@@ -622,41 +727,57 @@ module.exports = function (dep) {
           .prop('x-axis-visible-range-start', self.startDataset)
           .unlock();
       }};
-      if (allButton) {
-        allButton.btn = new self.toolbox.Symbol('ALL', true, {
-          paper: self.graphics.paper,
-          chart: self.chart,
-          smartLabel: self.smartLabel,
-          chartContainer: self.graphics.container
-        }, self.extData.style['all-config']).attachEventHandlers({
-          click: allButton.fn,
-          tooltext: 'ALL'
-        });
 
-        self.btns['ALL'] = allButton;
-
-        buttonGroup.addSymbol(allButton.btn);
+      btnList = {
+        'ALL': {
+          text: 'ALL',
+          config: {
+            height: 22,
+            radius: 1,
+            margin: {
+              right: 10
+            }
+          },
+          group: buttonGroup,
+          eventListeners: {
+            'click': allButton.fn
+          }
+        }
       };
+
+      dummyList = {
+        'dummy': {
+          text: '___',
+          config: {
+            height: 22,
+            radius: 1
+            // className: inputBtnStyles.className,
+            // states: {
+            //   selected: inputBtnStyles.states.selected.className,
+            //   errored: inputBtnStyles.states.errored.className
+            // }
+          },
+          group: dummyButtonGroup
+        }
+      };
+
+      if (allButton) {
+        self.btns['ALL'] = allButton;
+        self.createD3Buttons(btnList);
+      }
 
       // adding dummyButton
       for (let i = 0; i < 6; i++) {
-        dummyButtonGroup.addSymbol(new self.toolbox.Symbol('ALL', true, {
-          paper: self.graphics.paper,
-          chart: self.chart,
-          smartLabel: self.smartLabel,
-          chartContainer: self.graphics.container
-        }, self.extData.style['all-config']).attachEventHandlers({
-          click: allButton.fn,
-          tooltext: '___'
-        }));
+        self.btns['dummy'] = {};
+        self.createD3Buttons(dummyList);
       }
-      self.dummyButtonGroup = dummyButtonGroup;
 
       // adding group and button group to toolbar
       toolbar.addComponent(group);
       toolbar.addComponent(buttonGroup);
       toolbar.addComponent(dummyButtonGroup);
       self.toolbar = toolbar;
+      self.dummyButtonGroup = dummyButtonGroup;
       self.buttonGroup = buttonGroup;
       return toolbar;
     };
@@ -719,118 +840,51 @@ module.exports = function (dep) {
           'month': [1, 3, 6],
           'year': [1, 3, 5]
         },
-        'style': {
-          'label-config': {
-            // --config--
-            text: {
-              style: {
-                'font-family': '"Lucida Grande", sans-serif',
-                'font-size': '13',
-                'fill': '#4b4b4b'
+
+        button: {
+          height: 22,
+          radius: 1,
+          className: 'standard-period-selector',
+          container: {
+            style: {
+              fill: '#FFFFFF',
+              'stroke-width': '1px',
+              stroke: '#CED5D4',
+              labelFill: '#4b4b4b',
+              strokeWidth: '1px'
+              // 'input-shadow-fill': '#000000',
+              // 'input-shadow-opacity': 0.35,
+            }
+          },
+          text: {
+            style: {
+              'fontFamily': '"Lucida Grande", sans-serif',
+              'font-size': '13px',
+              'fill': '#4b4b4b',
+              'line-height': '1px',
+              'letter-spacing': '-0.04em'
+            }
+          },
+          states: {
+            hover: {
+              className: 'standard-period-selector-state-hover',
+              container: {
+                style: {
+                  cursor: 'pointer',
+                  fill: '#f7f7f7'
+                }
               }
-            },
-            container: {
-              height: 22
             }
-          },
-          'all-config': {
-            // --config--
-            fill: '#ffffff',
-            labelFill: '#4b4b4b',
-            symbolStrokeWidth: '2',
-            stroke: '#ced5d4',
-            strokeWidth: '1',
-            hoverFill: '#f7f7f7',
-            height: 22,
-            radius: 1,
-            margin: {
-              right: 5
-            },
-            btnTextStyle: {
-              'fontFamily': '"Lucida Grande", sans-serif',
-              'fontSize': '13',
-              'fill': '#4b4b4b',
-              'line-height': '1',
-              'letter-spacing': '-0.04em'
-            },
-            shadow: {
-              'fill': '#000',
-              'opacity': '0.35'
-            }
-          },
-          'calculated-config': {
-            // --config--
-            fill: '#ffffff',
-            labelFill: '#4b4b4b',
-            symbolStrokeWidth: '2',
-            stroke: '#ced5d4',
-            strokeWidth: '1',
-            hoverFill: '#f7f7f7',
-            height: 22,
-            radius: 1,
-            margin: {
-              right: 0
-            },
-            btnTextStyle: {
-              'fontFamily': '"Lucida Grande", sans-serif',
-              'fontSize': '13',
-              'fill': '#4b4b4b',
-              'line-height': '1',
-              'letter-spacing': '-0.04em'
-            },
-            shadow: {
-              'fill': '#000',
-              'opacity': '0.35'
-            }
-          },
-          'contextual-config-first': {
-            fill: '#ffffff',
-            labelFill: '#4b4b4b',
-            symbolStrokeWidth: '2',
-            stroke: '#ced5d4',
-            strokeWidth: '1',
-            height: 22,
-            hoverFill: '#f7f7f7',
-            radius: 1,
-            margin: {
-              right: 0,
-              left: 5
-            },
-            btnTextStyle: {
-              'fontFamily': '"Lucida Grande", sans-serif',
-              'fontSize': '13',
-              'fill': '#696969',
-              'line-height': '1',
-              'letter-spacing': '-0.04em'
-            },
-            shadow: {
-              'fill': '#000',
-              'opacity': '0.35'
-            }
-          },
-          'contextual-config': {
-            fill: '#ffffff',
-            labelFill: '#4b4b4b',
-            symbolStrokeWidth: '2',
-            stroke: '#ced5d4',
-            strokeWidth: '1',
-            height: 22,
-            hoverFill: '#f7f7f7',
-            radius: 1,
-            margin: {
-              right: 0,
-              left: 0
-            },
-            btnTextStyle: {
-              'fontFamily': '"Lucida Grande", sans-serif',
-              'fontSize': '13',
-              'fill': '#4b4b4b',
-              'line-height': '1',
-              'letter-spacing': '-0.04em'
-            },
-            shadow: {
-              'fill': '#000',
-              'opacity': '0.35'
+          }
+        },
+        label: {
+          height: 22,
+          className: 'standard-period-selector-label',
+          text: {
+            style: {
+              'font-family': '"Lucida Grande", sans-serif',
+              'font-size': '13px',
+              'fill': '#4b4b4b'
             }
           }
         }
@@ -975,11 +1029,13 @@ module.exports = function (dep) {
       self.minimumBucket = minimumBucket;
 
       self.dummyButtonGroup.dispose();
+      toolbars[0].removeComponent(self.dummyButtonGroup);
       // create all calculated button
       self.calculatedButtonShow && self.createCalculatedButtons(buttonGroup);
 
       // create all contextual button
       self.contextualButtonShow && self.createContextualButtons(buttonGroup);
+      buttonGroup.getLogicalSpace();
       if (self.keySelect) {
         if (self.keySelect === 'ALL') {
           self.clickedId = 'ALL';
