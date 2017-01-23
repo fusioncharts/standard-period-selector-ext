@@ -20,7 +20,7 @@ if (env === 'production') {
       loaders: [{
         test: /\.js$/,
         loader: 'eslint-loader',
-        exclude: /node_modules|src/ 
+        exclude: /node_modules/ 
       }]
     },
     eslint: {
@@ -47,7 +47,7 @@ if (env === 'production') {
       loaders: [{
         test: /\.js$/,
         loader: 'eslint-loader',
-        exclude: /node_modules|src/
+        exclude: /node_modules/
       }]
     },
     eslint: {
