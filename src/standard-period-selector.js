@@ -411,6 +411,7 @@ module.exports = function (dep) {
             btnList[keyName] = {
               text: keyAbb,
               config: {
+                toolText: keyName,
                 height: 22,
                 radius: 1,
                 margin: {
@@ -538,6 +539,7 @@ module.exports = function (dep) {
         contextualList[self.standardContexualPeriods[i].abbreviation] = {
           text: self.standardContexualPeriods[i].abbreviation,
           config: {
+            toolText: keyName,
             height: 22,
             radius: 1,
             margin: {
@@ -734,6 +736,7 @@ module.exports = function (dep) {
           config: {
             height: 22,
             radius: 1,
+            toolText: 'ALL',
             margin: {
               right: 10
             }
@@ -882,6 +885,7 @@ module.exports = function (dep) {
           className: 'standard-period-selector-label',
           text: {
             style: {
+              'font-weight': 'bold',
               'font-family': '"Lucida Grande", sans-serif',
               'font-size': '13px',
               'fill': '#4b4b4b'

@@ -484,6 +484,7 @@
 	            btnList[keyName] = {
 	              text: keyAbb,
 	              config: {
+	                toolText: keyName,
 	                height: 22,
 	                radius: 1,
 	                margin: {
@@ -611,6 +612,7 @@
 	        contextualList[self.standardContexualPeriods[i].abbreviation] = {
 	          text: self.standardContexualPeriods[i].abbreviation,
 	          config: {
+	            toolText: keyName,
 	            height: 22,
 	            radius: 1,
 	            margin: {
@@ -807,6 +809,7 @@
 	          config: {
 	            height: 22,
 	            radius: 1,
+	            toolText: 'ALL',
 	            margin: {
 	              right: 10
 	            }
@@ -955,6 +958,7 @@
 	          className: 'standard-period-selector-label',
 	          text: {
 	            style: {
+	              'font-weight': 'bold',
 	              'font-family': '"Lucida Grande", sans-serif',
 	              'font-size': '13px',
 	              'fill': '#4b4b4b'
