@@ -697,8 +697,17 @@
 	          text = inputButton.text;
 	          config = inputButton.config;
 	          // debugger
-	          self.btns[obj][key] = {};
-	          btn = self.btns[obj][key].btn = d3.button(text).setConfig(config);
+	          if (obj) {
+	            if (!self.btns[obj][key]) {
+	              self.btns[obj][key] = {};
+	            }
+	            btn = self.btns[obj][key].btn = d3.button(text).setConfig(config);
+	          } else {
+	            if (!self.btns[key]) {
+	              self.btns[key] = {};
+	            }
+	            btn = self.btns[key].btn = d3.button(text).setConfig(config);
+	          }
 	          btn.namespace('fusioncharts');
 	          btn.appendSelector('standarperiodselector');
 	          self.addCssRules(btn.getIndividualClassNames(btn.getClassName()), styles);
@@ -712,7 +721,6 @@
 	          });
 	          inputButton.group.addSymbol(btn);
 	        }
-	        console.log(self.btns);
 	      }
 	    }, {
 	      key: 'createD3Labels',
@@ -831,7 +839,7 @@
 	        allButton = self.allButtonShow && { fn: function fn() {
 	            // buttonGroup.setState(this);
 	            self.clickedId = 'ALL';
-	            // self.state = this;
+	            self.state = this;
 	            self.categoryClicked = 'ALL';
 	            self.highlightActiveRange();
 	            self.globalReactiveModel.lock().prop('x-axis-visible-range-end', self.endDataset).prop('x-axis-visible-range-start', self.startDataset).unlock();
@@ -873,7 +881,7 @@
 
 	        if (allButton) {
 	          self.btns['ALL'] = allButton;
-	          self.createD3Buttons(btnList, 'ALL');
+	          self.createD3Buttons(btnList);
 	        }
 
 	        // adding dummyButton
@@ -1153,6 +1161,7 @@
 	        if (self.keySelect) {
 	          if (self.keySelect === 'ALL') {
 	            self.clickedId = 'ALL';
+	            self.state = self.btns['ALL'].btn;
 	          } else if (contextualObj[self.keySelect]) {
 	            self.clickedId = self.keySelect;
 	          } else {
