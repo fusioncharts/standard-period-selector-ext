@@ -501,11 +501,11 @@
 	                'click': btnObj.fn
 	              }
 	            };
-	            self.btns[keyName] = btnObj;
+	            self.btns.calculatedObj[keyName] = btnObj;
 	          }
 	        }
 	      }
-	      self.createD3Buttons(btnList);
+	      self.createD3Buttons(btnList, 'calculatedObj');
 	    }
 
 	    // --test case made--
@@ -627,9 +627,9 @@
 
 	        margin = -5;
 
-	        self.btns[self.standardContexualPeriods[i].abbreviation] = btnObj;
+	        self.btns.contextualObj[self.standardContexualPeriods[i].abbreviation] = btnObj;
 	      }
-	      self.createD3Buttons(contextualList);
+	      self.createD3Buttons(contextualList, 'contextualObj');
 	    }
 
 	    addCssRules (classNames, styles) {
@@ -648,7 +648,7 @@
 	      }
 	    }
 
-	    createD3Buttons (store) {
+	    createD3Buttons (store, obj) {
 	      var key,
 	        inputButton,
 	        text,
@@ -665,7 +665,9 @@
 	        inputButton = store[key];
 	        text = inputButton.text;
 	        config = inputButton.config;
-	        btn = self.btns[key].btn = d3.button(text).setConfig(config);
+	        // debugger
+	        self.btns[obj][key] = {};
+	        btn = self.btns[obj][key].btn = d3.button(text).setConfig(config);
 	        btn.namespace('fusioncharts');
 	        btn.appendSelector('standarperiodselector');
 	        self.addCssRules(btn.getIndividualClassNames(btn.getClassName()), styles);
@@ -679,6 +681,7 @@
 	        });
 	        inputButton.group.addSymbol(btn);
 	      }
+	      console.log(self.btns);
 	    };
 
 	    createD3Labels (store) {
@@ -839,13 +842,13 @@
 
 	      if (allButton) {
 	        self.btns['ALL'] = allButton;
-	        self.createD3Buttons(btnList);
+	        self.createD3Buttons(btnList, 'ALL');
 	      }
 
 	      // adding dummyButton
 	      for (let i = 0; i < 6; i++) {
 	        self.btns['dummy'] = {};
-	        self.createD3Buttons(dummyList);
+	        self.createD3Buttons(dummyList, 'dummy');
 	      }
 
 	      // adding group and button group to toolbar
@@ -857,6 +860,19 @@
 	      self.buttonGroup = buttonGroup;
 	      return toolbar;
 	    };
+
+	    appendButtons () {
+	      var self = this,
+	        buttonGroup = self.buttonGroup;
+	      if (!Object.keys(self.btns.calculatedObj).length) {
+	        // create all calculated button
+	        self.calculatedButtonShow && self.createCalculatedButtons(buttonGroup);
+	      }
+	      if (!Object.keys(self.btns.contextualObj).length) {
+	        // create all contextual button
+	        self.contextualButtonShow && self.createContextualButtons(buttonGroup);
+	      }
+	    }
 
 	    // *********** Extension interface methods *********//
 
@@ -1107,11 +1123,12 @@
 
 	      self.dummyButtonGroup.dispose();
 	      toolbars[0].removeComponent(self.dummyButtonGroup);
-	      // create all calculated button
-	      self.calculatedButtonShow && self.createCalculatedButtons(buttonGroup);
+	      // // create all calculated button
+	      // self.calculatedButtonShow && self.createCalculatedButtons(buttonGroup);
 
-	      // create all contextual button
-	      self.contextualButtonShow && self.createContextualButtons(buttonGroup);
+	      // // create all contextual button
+	      // self.contextualButtonShow && self.createContextualButtons(buttonGroup);
+	      self.appendButtons();
 	      buttonGroup.getLogicalSpace();
 	      if (self.keySelect) {
 	        if (self.keySelect === 'ALL') {

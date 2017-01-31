@@ -13,6 +13,7 @@
   <!-- <script src='bower_components/fusioncharts/fusioncharts.timeseries.js' charset='utf-8'></script> -->
   <script src='node_modules/fusioncharts/fusioncharts.timeseries.js' charset='utf-8'></script>
   <!-- <script src='bower_components/fusioncharts/toolboxext.js' charset='utf-8'></script> -->
+  <script src='../xt-edge/develop/vendors/extensions/growth-analyser/dist/growth-analyser.js' ></script>
   <script src='dist/standard-period-selector.js' charset='utf-8'></script>
   <!-- <script src='http://192.168.0.207/date-range-chooser-ext/dist/date-range-chooser.min.js' charset='utf-8'></script> -->
   <!-- <script src='../xt-edge/develop/vendors/extensions/data-aggregator/dist/data-aggregator.js' ></script> -->
@@ -88,7 +89,13 @@
                         axes: [
                             {
                                 x: { },
-                                y: { }
+                                y: { 
+                                  name: {
+                                    label: {
+                                      text: 'abc'
+                                    }
+                                  }
+                                }
                             }
                         ],
                         datasets: [{
@@ -158,7 +165,7 @@
                         'posWrtCanvas': 'top',
                         'anchor-align': 'right',
                         'layout': 'inline',
-                        'alignment': 'right',
+                        'alignment': 'left',
                         'orientation': 'horizontal',
                         'customMultipliers': {
                           'millisecond': [1, 500],
