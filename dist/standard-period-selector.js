@@ -873,6 +873,7 @@
 	        'smartLabel',
 	        'extData',
 	        'chartInstance',
+	        'customExtremes',
 	        function (
 	              graphics,
 	              chart,
@@ -883,7 +884,8 @@
 	              spaceManagerInstance,
 	              smartLabel,
 	              extData,
-	              chartInstance) {
+	              chartInstance,
+	              customExtremes) {
 	          instance.graphics = graphics;
 	          instance.chart = chart;
 	          instance.markerManager = markerManager;
@@ -894,8 +896,10 @@
 	          instance.smartLabel = smartLabel;
 	          instance.extDataUser = extData;
 	          instance.chartInstance = chartInstance;
+	          instance.customExtremes = customExtremes;
 	        }
 	      ]);
+
 	      instance.extData = {
 	        'disabled': false,
 	        'default-select': 'ALL',
@@ -1113,7 +1117,7 @@
 	      // create all contextual button
 	      self.contextualButtonShow && self.createContextualButtons(buttonGroup);
 	      buttonGroup.getLogicalSpace();
-	      if (self.keySelect) {
+	      if (!Object.keys(self.customExtremes).length && self.keySelect) {
 	        if (self.keySelect === 'ALL') {
 	          self.clickedId = 'ALL';
 	        } else if (contextualObj[self.keySelect]) {
