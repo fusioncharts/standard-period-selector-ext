@@ -824,6 +824,7 @@ module.exports = function (dep) {
         'smartLabel',
         'extData',
         'chartInstance',
+        'customExtremes',
         function (
               graphics,
               chart,
@@ -834,7 +835,8 @@ module.exports = function (dep) {
               spaceManagerInstance,
               smartLabel,
               extData,
-              chartInstance) {
+              chartInstance,
+              customExtremes) {
           instance.graphics = graphics;
           instance.chart = chart;
           instance.markerManager = markerManager;
@@ -845,8 +847,10 @@ module.exports = function (dep) {
           instance.smartLabel = smartLabel;
           instance.extDataUser = extData;
           instance.chartInstance = chartInstance;
+          instance.customExtremes = customExtremes;
         }
       ]);
+
       instance.extData = {
         'disabled': false,
         'default-select': 'ALL',
@@ -1065,7 +1069,7 @@ module.exports = function (dep) {
       // self.contextualButtonShow && self.createContextualButtons(buttonGroup);
       self.appendButtons();
       buttonGroup.getLogicalSpace();
-      if (self.keySelect) {
+      if (!Object.keys(self.customExtremes).length && self.keySelect) {
         if (self.keySelect === 'ALL') {
           self.clickedId = 'ALL';
           self.state = self.btns['ALL'].btn;

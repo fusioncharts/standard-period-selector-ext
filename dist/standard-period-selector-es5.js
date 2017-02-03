@@ -920,7 +920,7 @@
 	      key: 'init',
 	      value: function init(require) {
 	        var instance = this;
-	        require(['graphics', 'chart', 'canvasConfig', 'MarkerManager', 'reactiveModel', 'globalReactiveModel', 'spaceManagerInstance', 'smartLabel', 'extData', 'chartInstance', function (graphics, chart, canvasConfig, markerManager, reactiveModel, globalReactiveModel, spaceManagerInstance, smartLabel, extData, chartInstance) {
+	        require(['graphics', 'chart', 'canvasConfig', 'MarkerManager', 'reactiveModel', 'globalReactiveModel', 'spaceManagerInstance', 'smartLabel', 'extData', 'chartInstance', 'customExtremes', function (graphics, chart, canvasConfig, markerManager, reactiveModel, globalReactiveModel, spaceManagerInstance, smartLabel, extData, chartInstance, customExtremes) {
 	          instance.graphics = graphics;
 	          instance.chart = chart;
 	          instance.markerManager = markerManager;
@@ -931,7 +931,9 @@
 	          instance.smartLabel = smartLabel;
 	          instance.extDataUser = extData;
 	          instance.chartInstance = chartInstance;
+	          instance.customExtremes = customExtremes;
 	        }]);
+
 	        instance.extData = {
 	          'disabled': false,
 	          'default-select': 'ALL',
@@ -1158,7 +1160,7 @@
 	        // self.contextualButtonShow && self.createContextualButtons(buttonGroup);
 	        self.appendButtons();
 	        buttonGroup.getLogicalSpace();
-	        if (self.keySelect) {
+	        if (!Object.keys(self.customExtremes).length && self.keySelect) {
 	          if (self.keySelect === 'ALL') {
 	            self.clickedId = 'ALL';
 	            self.state = self.btns['ALL'].btn;
