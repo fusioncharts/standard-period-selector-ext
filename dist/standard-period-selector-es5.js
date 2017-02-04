@@ -764,6 +764,7 @@
 	            btnList,
 	            group,
 	            dummyButtonGroup,
+	            paper = self.graphics.paper,
 	            dependencies = {
 	          paper: self.graphics.paper,
 	          chart: self.chart,
@@ -824,6 +825,7 @@
 	          'ZOOM': {
 	            text: 'Zoom:',
 	            config: {
+	              className: 'standard-period-selector-' + paper.getId(),
 	              height: 22,
 	              margin: {
 	                right: -12
@@ -997,7 +999,7 @@
 	            text: {
 	              style: {
 	                'font-weight': 'bold',
-	                'font-family': '"Lucida Grande", sans-serif',
+	                'font-family': '"Lucida Grande", Regular',
 	                'font-size': '13px',
 	                'fill': '#4b4b4b'
 	              }
