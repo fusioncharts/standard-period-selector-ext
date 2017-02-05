@@ -169,27 +169,27 @@
 	        'abbreviation': 'YTD',
 	        'parent': 'year',
 	        'milliseconds': 31104000000,
-	        'description': 'Year to Date'
+	        'description': 'Year till Date'
 	      }, {
 	        'name': 'QTD',
 	        'abbreviation': 'QTD',
 	        'parent': 'month',
 	        'multiplier': 3,
 	        'milliseconds': 7776000000,
-	        'description': 'Quarter to Date'
+	        'description': 'Quarter till Date'
 	      }, {
 	        'name': 'MTD',
 	        'abbreviation': 'MTD',
 	        'parent': 'month',
 	        'milliseconds': 2592000000,
-	        'description': 'Month to Date'
+	        'description': 'Month till Date'
 	      }, {
 	        'name': 'WTD',
 	        'abbreviation': 'WTD',
 	        'parent': 'day',
 	        'multiplier': 7,
 	        'milliseconds': 604800000,
-	        'description': 'Week to Date'
+	        'description': 'Week till Date'
 	      }, {
 	        'name': 'Y',
 	        'abbreviation': 'Y',
@@ -470,8 +470,11 @@
 
 	        for (var i = self.timePeriods.length - 1; i >= 0; i--) {
 	          var _loop = function _loop(j) {
-	            var keyAbb = self.timePeriods[i].multipliers[j] + self.timePeriods[i].abbreviation.single,
-	                keyName = self.timePeriods[i].multipliers[j] + self.timePeriods[i].name;
+	            var num = self.timePeriods[i].multipliers[j],
+	                keyAbb = num + self.timePeriods[i].abbreviation.single,
+	                keyName = num + self.timePeriods[i].name,
+	                tooltext = num + ' ' + self.timePeriods[i].name + (num > 1 ? 's' : '');
+
 	            var interval = self.timePeriods[i].multipliers[j] * self.timePeriods[i].interval;
 	            if (interval > minimumBucket && interval < maximumBucket) {
 	              btnObj = calculatedObj[keyName] = {
@@ -503,7 +506,7 @@
 	              btnList[keyName] = {
 	                text: keyAbb,
 	                config: {
-	                  toolText: keyName,
+	                  toolText: tooltext,
 	                  height: 22,
 	                  radius: 1,
 	                  margin: {
@@ -635,7 +638,7 @@
 	          contextualList[self.standardContexualPeriods[i].abbreviation] = {
 	            text: self.standardContexualPeriods[i].abbreviation,
 	            config: {
-	              toolText: keyName,
+	              toolText: self.standardContexualPeriods[i].description,
 	              height: 22,
 	              radius: 1,
 	              margin: {
