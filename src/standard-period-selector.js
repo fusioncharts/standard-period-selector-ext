@@ -752,7 +752,7 @@ module.exports = function (dep) {
           config: {
             height: 22,
             radius: 1,
-            toolText: 'ALL',
+            toolText: 'Full Data',
             margin: {
               right: 10
             }
