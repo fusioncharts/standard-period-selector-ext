@@ -73,7 +73,7 @@ module.exports = function (dep) {
           'abbreviation': 'YTD',
           'parent': 'year',
           'milliseconds': 31104000000,
-          'description': 'Year to Date'
+          'description': 'Year till Date'
         },
         {
           'name': 'QTD',
@@ -81,14 +81,14 @@ module.exports = function (dep) {
           'parent': 'month',
           'multiplier': 3,
           'milliseconds': 7776000000,
-          'description': 'Quarter to Date'
+          'description': 'Quarter till Date'
         },
         {
           'name': 'MTD',
           'abbreviation': 'MTD',
           'parent': 'month',
           'milliseconds': 2592000000,
-          'description': 'Month to Date'
+          'description': 'Month till Date'
         },
         {
           'name': 'WTD',
@@ -96,7 +96,7 @@ module.exports = function (dep) {
           'parent': 'day',
           'multiplier': 7,
           'milliseconds': 604800000,
-          'description': 'Week to Date'
+          'description': 'Week till Date'
         },
         {
           'name': 'Y',
@@ -372,8 +372,11 @@ module.exports = function (dep) {
 
       for (let i = self.timePeriods.length - 1; i >= 0; i--) {
         for (let j = self.timePeriods[i].multipliers.length - 1; j >= 0; j--) {
-          let keyAbb = self.timePeriods[i].multipliers[j] + self.timePeriods[i].abbreviation.single,
-            keyName = self.timePeriods[i].multipliers[j] + self.timePeriods[i].name;
+          let num = self.timePeriods[i].multipliers[j],
+            keyAbb = num + self.timePeriods[i].abbreviation.single,
+            keyName = num + self.timePeriods[i].name,
+            tooltext = num + ' ' + self.timePeriods[i].name + (num > 1 ? 's' : '');
+
           let interval = (self.timePeriods[i].multipliers[j] * self.timePeriods[i].interval);
           if (interval > minimumBucket && interval < maximumBucket) {
             btnObj = calculatedObj[keyName] = {
@@ -413,7 +416,7 @@ module.exports = function (dep) {
             btnList[keyName] = {
               text: keyAbb,
               config: {
-                toolText: keyName,
+                toolText: tooltext,
                 height: 22,
                 radius: 1,
                 margin: {
@@ -541,7 +544,7 @@ module.exports = function (dep) {
         contextualList[self.standardContexualPeriods[i].abbreviation] = {
           text: self.standardContexualPeriods[i].abbreviation,
           config: {
-            toolText: keyName,
+            toolText: self.standardContexualPeriods[i].description,
             height: 22,
             radius: 1,
             margin: {
@@ -658,6 +661,7 @@ module.exports = function (dep) {
         btnList,
         group,
         dummyButtonGroup,
+        paper = self.graphics.paper,
         dependencies = {
           paper: self.graphics.paper,
           chart: self.chart,
@@ -718,6 +722,7 @@ module.exports = function (dep) {
         'ZOOM': {
           text: 'Zoom:',
           config: {
+            className: 'standard-period-selector-' + paper.getId(),
             height: 22,
             margin: {
               right: -12
@@ -749,7 +754,7 @@ module.exports = function (dep) {
           config: {
             height: 22,
             radius: 1,
-            toolText: 'ALL',
+            toolText: 'Full Data',
             margin: {
               right: 10
             }
@@ -826,6 +831,7 @@ module.exports = function (dep) {
         'smartLabel',
         'extData',
         'chartInstance',
+        'customExtremes',
         function (
               graphics,
               chart,
@@ -836,7 +842,8 @@ module.exports = function (dep) {
               spaceManagerInstance,
               smartLabel,
               extData,
-              chartInstance) {
+              chartInstance,
+              customExtremes) {
           instance.graphics = graphics;
           instance.chart = chart;
           instance.markerManager = markerManager;
@@ -847,8 +854,10 @@ module.exports = function (dep) {
           instance.smartLabel = smartLabel;
           instance.extDataUser = extData;
           instance.chartInstance = chartInstance;
+          instance.customExtremes = customExtremes;
         }
       ]);
+
       instance.extData = {
         'disabled': false,
         'default-select': 'ALL',
@@ -912,7 +921,7 @@ module.exports = function (dep) {
           text: {
             style: {
               'font-weight': 'bold',
-              'font-family': '"Lucida Grande", sans-serif',
+              'font-family': '"Lucida Grande", Regular',
               'font-size': '13px',
               'fill': '#4b4b4b'
             }
@@ -1067,7 +1076,7 @@ module.exports = function (dep) {
       // self.contextualButtonShow && self.createContextualButtons(buttonGroup);
       self.appendButtons();
       buttonGroup.getLogicalSpace();
-      if (self.keySelect) {
+      if (!Object.keys(self.customExtremes).length && self.keySelect) {
         if (self.keySelect === 'ALL') {
           self.clickedId = 'ALL';
           self.state = self.btns['ALL'].btn;

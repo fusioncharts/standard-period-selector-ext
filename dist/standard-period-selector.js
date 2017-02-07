@@ -146,7 +146,7 @@
 	          'abbreviation': 'YTD',
 	          'parent': 'year',
 	          'milliseconds': 31104000000,
-	          'description': 'Year to Date'
+	          'description': 'Year till Date'
 	        },
 	        {
 	          'name': 'QTD',
@@ -154,14 +154,14 @@
 	          'parent': 'month',
 	          'multiplier': 3,
 	          'milliseconds': 7776000000,
-	          'description': 'Quarter to Date'
+	          'description': 'Quarter till Date'
 	        },
 	        {
 	          'name': 'MTD',
 	          'abbreviation': 'MTD',
 	          'parent': 'month',
 	          'milliseconds': 2592000000,
-	          'description': 'Month to Date'
+	          'description': 'Month till Date'
 	        },
 	        {
 	          'name': 'WTD',
@@ -169,7 +169,7 @@
 	          'parent': 'day',
 	          'multiplier': 7,
 	          'milliseconds': 604800000,
-	          'description': 'Week to Date'
+	          'description': 'Week till Date'
 	        },
 	        {
 	          'name': 'Y',
@@ -445,8 +445,11 @@
 
 	      for (let i = self.timePeriods.length - 1; i >= 0; i--) {
 	        for (let j = self.timePeriods[i].multipliers.length - 1; j >= 0; j--) {
-	          let keyAbb = self.timePeriods[i].multipliers[j] + self.timePeriods[i].abbreviation.single,
-	            keyName = self.timePeriods[i].multipliers[j] + self.timePeriods[i].name;
+	          let num = self.timePeriods[i].multipliers[j],
+	            keyAbb = num + self.timePeriods[i].abbreviation.single,
+	            keyName = num + self.timePeriods[i].name,
+	            tooltext = num + ' ' + self.timePeriods[i].name + (num > 1 ? 's' : '');
+
 	          let interval = (self.timePeriods[i].multipliers[j] * self.timePeriods[i].interval);
 	          if (interval > minimumBucket && interval < maximumBucket) {
 	            btnObj = calculatedObj[keyName] = {
@@ -486,7 +489,7 @@
 	            btnList[keyName] = {
 	              text: keyAbb,
 	              config: {
-	                toolText: keyName,
+	                toolText: tooltext,
 	                height: 22,
 	                radius: 1,
 	                margin: {
@@ -614,7 +617,7 @@
 	        contextualList[self.standardContexualPeriods[i].abbreviation] = {
 	          text: self.standardContexualPeriods[i].abbreviation,
 	          config: {
-	            toolText: keyName,
+	            toolText: self.standardContexualPeriods[i].description,
 	            height: 22,
 	            radius: 1,
 	            margin: {
@@ -731,6 +734,7 @@
 	        btnList,
 	        group,
 	        dummyButtonGroup,
+	        paper = self.graphics.paper,
 	        dependencies = {
 	          paper: self.graphics.paper,
 	          chart: self.chart,
@@ -791,6 +795,7 @@
 	        'ZOOM': {
 	          text: 'Zoom:',
 	          config: {
+	            className: 'standard-period-selector-' + paper.getId(),
 	            height: 22,
 	            margin: {
 	              right: -12
@@ -822,7 +827,7 @@
 	          config: {
 	            height: 22,
 	            radius: 1,
-	            toolText: 'ALL',
+	            toolText: 'Full Data',
 	            margin: {
 	              right: 10
 	            }
@@ -899,6 +904,7 @@
 	        'smartLabel',
 	        'extData',
 	        'chartInstance',
+	        'customExtremes',
 	        function (
 	              graphics,
 	              chart,
@@ -909,7 +915,8 @@
 	              spaceManagerInstance,
 	              smartLabel,
 	              extData,
-	              chartInstance) {
+	              chartInstance,
+	              customExtremes) {
 	          instance.graphics = graphics;
 	          instance.chart = chart;
 	          instance.markerManager = markerManager;
@@ -920,8 +927,10 @@
 	          instance.smartLabel = smartLabel;
 	          instance.extDataUser = extData;
 	          instance.chartInstance = chartInstance;
+	          instance.customExtremes = customExtremes;
 	        }
 	      ]);
+
 	      instance.extData = {
 	        'disabled': false,
 	        'default-select': 'ALL',
@@ -985,7 +994,7 @@
 	          text: {
 	            style: {
 	              'font-weight': 'bold',
-	              'font-family': '"Lucida Grande", sans-serif',
+	              'font-family': '"Lucida Grande", Regular',
 	              'font-size': '13px',
 	              'fill': '#4b4b4b'
 	            }
@@ -1140,7 +1149,7 @@
 	      // self.contextualButtonShow && self.createContextualButtons(buttonGroup);
 	      self.appendButtons();
 	      buttonGroup.getLogicalSpace();
-	      if (self.keySelect) {
+	      if (!Object.keys(self.customExtremes).length && self.keySelect) {
 	        if (self.keySelect === 'ALL') {
 	          self.clickedId = 'ALL';
 	          self.state = self.btns['ALL'].btn;
