@@ -247,6 +247,8 @@ module.exports = function (dep) {
       if (activeBtn && activeBtn.btn) {
         self.buttonGroup.setState(activeBtn.btn);
         self.state = activeBtn.btn;
+      } else {
+        self.buttonGroup.setState(null);
       }
       // if (activeBtn) {
       //   boundElement = activeBtn.btn.svgElems.node;
