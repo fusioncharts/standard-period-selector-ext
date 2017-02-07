@@ -849,7 +849,15 @@
 	            self.state = this;
 	            self.categoryClicked = 'ALL';
 	            self.highlightActiveRange();
-	            self.globalReactiveModel.lock().prop('x-axis-visible-range-end', self.endDataset).prop('x-axis-visible-range-start', self.startDataset).unlock();
+	            // todo: temporary fix
+
+	            // self.globalReactiveModel
+	            //   .lock()
+	            //   .prop('x-axis-visible-range-end', self.endDataset)
+	            //   .prop('x-axis-visible-range-start', self.startDataset)
+	            //   .unlock();
+
+	            self.globalReactiveModel.lock().prop('x-axis-visible-range-end', self.globalReactiveModel.prop('x-axis-absolute-range-end')).prop('x-axis-visible-range-start', self.startDataset).unlock();
 	          } };
 
 	        btnList = {
