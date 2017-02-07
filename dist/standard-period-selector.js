@@ -539,7 +539,7 @@
 	          dateStart.setSeconds(0);
 	        } else if (tdButtons[i].name === 'QTD') {
 	          dateStart.setMonth(11 - (dateStart.getMonth() % 4));
-	          dateStart.setDate(0);
+	          dateStart.setDate(1);
 	          dateStart.setHours(0);
 	          dateStart.setMinutes(0);
 	          dateStart.setSeconds(0);
