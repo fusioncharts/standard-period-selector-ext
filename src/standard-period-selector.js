@@ -445,8 +445,12 @@ module.exports = function (dep) {
       // generating an array with applicable TD buttons
       var self = this,
         buttons = self.standardContexualPeriods,
+        dummyButtons = [],
         i = 0,
         ii = 0,
+        j = 0,
+        jj = 0,
+        k = 0,
         endStamp = self.globalReactiveModel.model['x-axis-absolute-range-end'],
         dateStart = endStamp - 2,
         dateEnd = endStamp,
@@ -470,7 +474,7 @@ module.exports = function (dep) {
           dateStart.setMinutes(0);
           dateStart.setSeconds(0);
         } else if (tdButtons[i].name === 'QTD') {
-          dateStart.setMonth(11 - (dateStart.getMonth() % 4));
+          dateStart.setMonth(11 - (dateStart.getMonth() % 3));
           dateStart.setDate(1);
           dateStart.setHours(0);
           dateStart.setMinutes(0);
@@ -499,9 +503,24 @@ module.exports = function (dep) {
         } else {
           tdButtons[i].dateStart = dateStart.valueOf();
           tdButtons[i].dateEnd = dateEnd.valueOf();
-          buttons.push(tdButtons[i]);
+          dummyButtons.push(tdButtons[i]);
         }
       }
+
+      for (j = 0, jj = dummyButtons.length - 1; j < jj; j++) {
+        for (k = j + 1; k < jj; k++) {
+          if (dummyButtons[j].dateStart === dummyButtons[k].dateStart) {
+            dummyButtons[j].redundant = true;
+          }
+        }
+      }
+
+      for (j in dummyButtons) {
+        if (!(dummyButtons[j].redundant)) {
+          buttons.push(dummyButtons[j]);
+        }
+      }
+
       relativeTDButton.milliseconds = Infinity;
       for (i = 0, ii = tdButtons.length; i < ii; i++) {
         if (Math.abs(tdButtons[i].milliseconds - (endActiveWindow - startActiveWindow)) < relativeTDButton.milliseconds) {
