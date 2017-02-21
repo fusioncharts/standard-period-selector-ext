@@ -1027,7 +1027,8 @@ module.exports = function (dep) {
           return 'standard-period-selector-ext';
         },
         ref: function (obj) {
-          return obj['0'];
+          var userRef = self.extData.ref;
+          return userRef === undefined ? obj.chart : userRef;
         },
         self: function () {
           return self;
@@ -1058,7 +1059,7 @@ module.exports = function (dep) {
             }]
           }]
         }]
-      }]);
+      }],Object.keys(this.chartInstance.apiInstance.getComponentStore().getAllCanvas()).length);
     };
 
     setDrawingConfiguration (x, y, width, height, group) {

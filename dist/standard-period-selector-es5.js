@@ -1114,7 +1114,8 @@
 	            return 'standard-period-selector-ext';
 	          },
 	          ref: function ref(obj) {
-	            return obj['0'];
+	            var userRef = _self.extData.ref;
+	            return userRef === undefined ? obj.chart : userRef;
 	          },
 	          self: function self() {
 	            return _self;
@@ -1145,7 +1146,7 @@
 	              }]
 	            }]
 	          }]
-	        }]);
+	        }], Object.keys(this.chartInstance.apiInstance.getComponentStore().getAllCanvas()).length);
 	      }
 	    }, {
 	      key: 'setDrawingConfiguration',
