@@ -633,7 +633,7 @@ module.exports = function (dep) {
         self.addCssRules(btn.getIndividualClassNames(btn.getClassName()), styles);
         states = styles.states;
         for (state in states) {
-          self.addCssRules(btn.getIndividualClassNames(btn.config.states[state]), styles.states[state]);
+          self.addCssRules(btn.getIndividualClassNames(btn.getStateClassName(state)), styles.states[state]);
         }
 
         inputButton.eventListeners && btn.attachEventHandlers({
@@ -956,6 +956,12 @@ module.exports = function (dep) {
         }
       };
       Object.assign(instance.extData, instance.extDataUser);
+      return instance;
+    };
+
+    configure () {
+      var instance = this;
+
       instance.endActiveWindow = instance.globalReactiveModel.model['x-axis-visible-range-end'];
       instance.startActiveWindow = instance.globalReactiveModel.model['x-axis-visible-range-start'];
       instance.startDataset = instance.globalReactiveModel.model['x-axis-absolute-range-start'];
@@ -990,8 +996,7 @@ module.exports = function (dep) {
             instance.globalReactiveModel.model['x-axis-absolute-range-end'];
         }
       });
-      return instance;
-    };
+    }
 
     getLogicalSpace (availableWidth = this._pWidth, availableHeight = this._pHeight) {
       var logicalSpace,

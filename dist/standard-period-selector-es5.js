@@ -737,7 +737,7 @@
 	          self.addCssRules(btn.getIndividualClassNames(btn.getClassName()), styles);
 	          states = styles.states;
 	          for (state in states) {
-	            self.addCssRules(btn.getIndividualClassNames(btn.config.states[state]), styles.states[state]);
+	            self.addCssRules(btn.getIndividualClassNames(btn.getStateClassName(state)), styles.states[state]);
 	          }
 
 	          inputButton.eventListeners && btn.attachEventHandlers({
@@ -1039,6 +1039,13 @@
 	          }
 	        };
 	        Object.assign(instance.extData, instance.extDataUser);
+	        return instance;
+	      }
+	    }, {
+	      key: 'configure',
+	      value: function configure() {
+	        var instance = this;
+
 	        instance.endActiveWindow = instance.globalReactiveModel.model['x-axis-visible-range-end'];
 	        instance.startActiveWindow = instance.globalReactiveModel.model['x-axis-visible-range-start'];
 	        instance.startDataset = instance.globalReactiveModel.model['x-axis-absolute-range-start'];
@@ -1071,7 +1078,6 @@
 	            instance.globalReactiveModel.model['x-axis-visible-range-end'] = instance.globalReactiveModel.model['x-axis-absolute-range-end'];
 	          }
 	        });
-	        return instance;
 	      }
 	    }, {
 	      key: 'getLogicalSpace',
