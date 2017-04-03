@@ -1064,7 +1064,7 @@ module.exports = function (dep) {
             }]
           }]
         }]
-      }],Object.keys(this.chartInstance.apiInstance.getComponentStore().getAllCanvas()).length);
+      }], Object.keys(this.chartInstance.apiInstance.getComponentStore().getAllCanvas()).length);
     };
 
     setDrawingConfiguration (x, y, width, height, group) {
