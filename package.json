@@ -2,7 +2,7 @@
   "name": "standard-period-selector-ext",
   "version": "0.0.1",
   "description": "Standard Period Selector extension for Fusioncharts timeseries.",
-  "main": "dist/standard-period-selector-es5.js",
+  "main": "src/index.js",
   "scripts": {
     "build": "npm run build-es6 && npm run build-es5 && npm run docs && npm run jsunit",
     "jsunit": "nyc mocha --timeout=3000",
@@ -38,6 +38,7 @@
   "devDependencies": {
     "babel-core": "^6.18.2",
     "babel-loader": "^6.2.8",
+    "babel-preset-env": "^1.3.2",
     "babel-preset-latest": "^6.16.0",
     "babili-webpack-plugin": "0.0.7",
     "chai": "^3.5.0",
@@ -55,7 +56,7 @@
     "webpack-stream": "^3.2.0"
   },
   "dependencies": {
-    "fusioncharts": "^3.11.3",
+    "fusioncharts": "^3.12.0",
     "jest": "^17.0.3"
   }
 }
