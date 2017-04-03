@@ -2,7 +2,7 @@
   "name": "standard-period-selector-ext",
   "version": "0.0.1",
   "description": "Standard Period Selector extension for Fusioncharts timeseries.",
-  "main": "src/index.js",
+  "main": "dist/standard-period-selector.js",
   "scripts": {
     "build": "npm run build-es6 && npm run build-es5 && npm run docs && npm run jsunit",
     "jsunit": "nyc mocha --timeout=3000",
